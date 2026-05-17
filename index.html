@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="description" content="Betting Exchange Simulator - World Cup 2026 Edition">
+    <title>Betting Exchange Room</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@700;800;900&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Betfair Color Palette */
+            --bf-blue: #2b8aed;          /* Back */
+            --bf-blue-light: #ebf3fb;
+            --bf-blue-border: #b5d3f2;
+            --bf-blue-hover: #1d71c9;
+            
+            --bf-pink: #f4b4ce;          /* Lay */
+            --bf-red: #e11a28;           /* Danger/Negative */
+            --bf-red-light: #fef0f2;
+            
+            --bf-green: #25a347;         /* Profit/Success */
+            --bf-green-light: #eaf6ec;
+            
+            --bf-dark: #121518;
+            --bf-grey: #66727d;
+            --bf-bg: #f2f5f7;
+
+            /* Football Pitch Theme */
+            --pitch-dark: #327c36;
+            --pitch-light: #3a8c3e;
+            --banner-bg: #0d1114;
+            --banner-border: #232b32;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bf-bg); 
+            color: var(--bf-dark); 
+            margin: 0; padding: 0;
+            overflow: hidden; 
+            overscroll-behavior: none;
+            touch-action: manipulation;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, .font-heading { font-family: 'Montserrat', sans-serif; }
+        .font-sport { font-family: 'Teko', sans-serif; } 
+
+        #app-wrapper {
+            display: flex;
+            flex-direction: column;
+            width: 100dvw;
+            height: 100dvh;
+            overflow: hidden;
+        }
+
+        /* Top Language Bar */
+        #lang-bar {
+            flex-shrink: 0;
+            height: 44px;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            border-bottom: 1px solid #dce2e8;
+            display: flex; justify-content: flex-end; align-items: center; padding: 0 15px;
+            z-index: 100; gap: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+        }
+        .lang-btn {
+            font-weight: 800; font-size: 12px; color: var(--bf-grey); text-transform: uppercase;
+            cursor: pointer; padding: 6px 10px; border-radius: 6px; transition: all 0.2s;
+        }
+        .lang-btn.active { color: var(--bf-blue); background: var(--bf-blue-light); box-shadow: inset 0 0 0 1px var(--bf-blue-border);}
+
+        #board-container { 
+            flex: 1; min-height: 0; 
+            display: flex; align-items: center; justify-content: center; 
+            position: relative; padding: 2vmin; box-sizing: border-box;
+            background: radial-gradient(circle at center, #232b32 0%, #0d1114 100%);
+        }
+        
+        #board-area {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            width: 100%; height: 100%;
+            max-width: calc( (100dvh - 120px) * 1.8 ); 
+            aspect-ratio: 16 / 9;
+            background-color: var(--banner-bg); 
+            border-radius: 8px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 4px var(--banner-border);
+            z-index: 10;
+        }
+
+        @media (max-aspect-ratio: 4/3) {
+            #board-area { aspect-ratio: 4 / 5; max-width: 100%; }
+        }
+
+        #board {
+            width: 99.5%; height: 99%; display: grid;
+            grid-template-columns: 14% repeat(7, 1fr) 14%;
+            grid-template-rows: 18% repeat(3, 1fr) 18%;
+            gap: 2px; background-color: var(--banner-border); 
+            border-radius: 6px; overflow: hidden;
+        }
+
+        .cell { 
+            background-color: var(--banner-bg); position: relative; overflow: hidden; 
+            box-sizing: border-box; container-type: size; contain: strict; 
+            transition: all 0.3s ease; display: flex; align-items: center; justify-content: center;
+        }
+
+        .cell-content { 
+            position: absolute; top: 50%; left: 50%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-start; 
+            text-align: center; box-sizing: border-box; padding: 1%; 
+            width: 100%; height: 100%;
+        }
+
+        .bottom-row .cell-content { transform: translate(-50%, -50%) rotate(0deg); }
+        .top-row .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
+        .left-col .cell-content { transform: translate(-50%, -50%) rotate(90deg); width: 100cqh; height: 100cqw; }
+        .right-col .cell-content { transform: translate(-50%, -50%) rotate(-90deg); width: 100cqh; height: 100cqw; }
+        .corner .cell-content { justify-content: center; padding: 2%; transform: translate(-50%, -50%) rotate(0deg);}
+        
+        #cell-8 .cell-content { transform: translate(-50%, -50%) rotate(90deg); }
+        #cell-12 .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
+        #cell-20 .cell-content { transform: translate(-50%, -50%) rotate(-90deg); }
+
+        .color-bar { 
+            width: 100%; height: 28%; 
+            border-bottom: 1px solid var(--banner-border);
+            display:flex; align-items:center; justify-content:center;
+            background-color: #1a2228; transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .outcome-badge { 
+            background: #ffffff; color: #000; font-weight: 900; font-family: 'Montserrat'; 
+            font-size: clamp(7px, 10cqmin, 14px); padding: 1% 8%; 
+            border-radius: 4px; border: 2px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            line-height: 1.1;
+        }
+
+        .property-name {
+            font-weight: 800; font-size: clamp(6px, 11cqmin, 13px); line-height: 1.05; 
+            text-transform: uppercase; margin: auto 0; 
+            display: flex; align-items: center; justify-content: center; flex-grow: 1;
+            padding: 2% 4%; color: #fff; text-align: center; width: 100%; box-sizing: border-box; 
+            letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; 
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; hyphens: auto;
+        }
+
+        .property-price { 
+            font-size: clamp(7px, 12cqmin, 15px); font-family: 'Teko', sans-serif; font-weight: 600; 
+            margin-bottom: 3%; flex-shrink: 0; color: #fff; 
+            background: rgba(43, 138, 237, 0.2); padding: 0 8%; border-radius: 3px; 
+            border: 1px solid var(--bf-blue); letter-spacing: 0.5px; line-height: 1.2;
+        }
+        
+        #center-board {
+            grid-column: 2 / span 7; grid-row: 2 / span 3;
+            background: repeating-linear-gradient(90deg, var(--pitch-dark), var(--pitch-dark) 10%, var(--pitch-light) 10%, var(--pitch-light) 20%);
+            position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden; outline: 3px solid #fff; outline-offset: -10px;
+        }
+
+        /* Football Pitch Lines */
+        .pitch-line-center { position: absolute; width: 3px; height: calc(100% - 20px); background: rgba(255,255,255,0.8); left: 50%; top: 10px; transform: translateX(-50%); }
+        .pitch-circle { position: absolute; width: 15%; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.8); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+        .pitch-center-dot { position: absolute; width: 6px; height: 6px; background: rgba(255,255,255,0.8); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+        .pitch-box-left, .pitch-box-right { position: absolute; width: 12%; height: 45%; border: 3px solid rgba(255,255,255,0.8); top: 50%; transform: translateY(-50%); }
+        .pitch-box-left { left: 10px; border-left: none; }
+        .pitch-box-right { right: 10px; border-right: none; }
+
+        .center-logo {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 35%; max-width: 200px; opacity: 0.15; pointer-events: none; border-radius: 50%; mix-blend-mode: overlay;
+        }
+
+        .deck-slot { 
+            position: absolute; width: 15%; aspect-ratio: 1.5; 
+            border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px;
+            display: flex; justify-content: center; align-items: center; 
+        }
+        .deck-slot.news { top: 12%; left: 12%; transform: rotate(-15deg); }
+        .deck-slot.movers { bottom: 12%; right: 12%; transform: rotate(-15deg); }
+        
+        .deck-stack { 
+            width: 90%; height: 85%; border-radius: 4px; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: -2px 2px 0px rgba(0,0,0,0.3), -4px 4px 0px rgba(0,0,0,0.2), 0 6px 12px rgba(0,0,0,0.5); 
+            border: 1px solid rgba(255,255,255,0.2); text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            font-family: 'Montserrat'; font-weight: 900; font-size: clamp(7px, 2vmin, 14px);
+            text-align: center; line-height: 1.1; letter-spacing: -0.5px;
+        }
+        .deck-stack.bg-news { background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; border-color: #38bdf8;}
+        .deck-stack.bg-movers { background: linear-gradient(135deg, #f43f5e, #be123c); color: #fff; border-color: #fb7185;}
+
+        .dice-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: flex; gap: clamp(8px, 2vmin, 20px); z-index: 25; perspective: 1000px; }
+        @keyframes dice-pulse { 0% { transform: scale(1); filter: drop-shadow(0 0 0 transparent); } 100% { transform: scale(1.08) translateY(-0.5vmin); filter: drop-shadow(0 1.5vmin 2.5vmin rgba(255,255,255,0.4)); } }
+        .dice-ready { animation: dice-pulse 1s infinite alternate ease-in-out; cursor: pointer; }
+        .die-wrapper { display: flex; align-items: center; justify-content: center; }
+        .die-3d { width: clamp(24px, 5vmin, 44px); height: clamp(24px, 5vmin, 44px); position: relative; transform-style: preserve-3d; transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .die-face { position: absolute; width: 100%; height: 100%; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 16%; display: grid; padding: 12%; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); box-shadow: inset 0 0 12px rgba(0,0,0,0.08); }
+        .die-dot { background: var(--bf-dark); border-radius: 50%; width: 100%; height: 100%; }
+        .dot-1 { grid-area: 1 / 1; } .dot-3 { grid-area: 1 / 3; } .dot-4 { grid-area: 2 / 1; } .dot-5 { grid-area: 2 / 2; } .dot-6 { grid-area: 2 / 3; } .dot-7 { grid-area: 3 / 1; } .dot-9 { grid-area: 3 / 3; }
+        
+        .face-1 { transform: rotateY(0deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); } .face-2 { transform: rotateY(-90deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); }
+        .face-3 { transform: rotateX(90deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); } .face-4 { transform: rotateX(-90deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); }
+        .face-5 { transform: rotateY(90deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); } .face-6 { transform: rotateY(180deg) translateZ(calc(clamp(24px, 5vmin, 44px) / 2)); }
+        
+        .die-result-face { position: absolute; width: 100%; height: 100%; background: var(--banner-bg); color: white; font-family: 'Teko', sans-serif; font-weight: 700; font-size: clamp(18px, 4.5vmin, 38px); border: 2px solid #fff; border-radius: 16%; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 15px rgba(0,0,0,0.8); line-height: 1;}
+        
+        .anim-jump { animation: jump 1.2s ease-out forwards; }
+        @keyframes jump { 0% { transform: translateY(0) scale(1); } 40% { transform: translateY(-15vmin) scale(1.3) rotateX(360deg) rotateZ(180deg); } 70% { transform: translateY(-3vmin) scale(1.05); } 100% { transform: translateY(0) scale(1); } }
+
+        .token { 
+            position: absolute; z-index: 30; 
+            width: clamp(20px, 4vmin, 36px); height: clamp(20px, 4vmin, 36px); 
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            transform: translate(-50%, -100%); 
+            pointer-events: none; display:flex; align-items:flex-end; justify-content:center;
+            filter: drop-shadow(0 10px 6px rgba(0,0,0,0.6));
+        }
+        .token-svg { width: 100%; height: 100%; }
+
+        #ui-bottom-bar {
+            flex-shrink: 0; position: relative; z-index: 50;
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+            padding-bottom: env(safe-area-inset-bottom, 8px); 
+            border-top: 1px solid #dce2e8; box-shadow: 0 -4px 20px rgba(0,0,0,0.05);
+        }
+
+        #player-zones { 
+            width: 100%; max-width: 1000px; display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); 
+            gap: 8px; padding: 10px; 
+        }
+
+        .player-zone {
+            display: flex; align-items: center; justify-content: center;
+            background: #fff; padding: 8px; border-radius: 8px;
+            border: 1px solid #dce2e8; transition: all 0.2s ease;
+        }
+        .player-zone.active { border-color: var(--bf-blue); background: var(--bf-blue-light); box-shadow: 0 4px 12px rgba(43,138,237,0.15); transform: translateY(-2px);}
+        .player-zone.bankrupt { opacity: 0.4; filter: grayscale(100%); transform: scale(0.95);}
+
+        .pz-info { display: flex; align-items: center; gap: 8px; color: var(--bf-dark); width: 100%; justify-content: center;}
+        .pz-name { font-weight: 800; font-size: clamp(10px, 1.4vw, 12px); text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 80px; color: var(--bf-grey);}
+        .pz-token { width: clamp(20px, 2.5vw, 24px); height: clamp(20px, 2.5vw, 24px); display:flex; align-items:center; justify-content:center;}
+        .pz-balance { font-family: 'Montserrat', sans-serif; font-weight: 900; font-size: clamp(11px, 1.6vw, 14px); color: var(--bf-dark); line-height: 1.1;}
+
+        .modal-overlay { 
+            position: fixed; inset: 0; background: rgba(18, 21, 24, 0.7); 
+            backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+            display: none; justify-content: center; align-items: center; z-index: 99999; 
+            padding: 12px; box-sizing: border-box; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .modal-overlay.show { opacity: 1; }
+        
+        .modal-box-wrapper { transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); width: 100%; display: flex; justify-content: center; transform: scale(0.95); }
+        .modal-overlay.show .modal-box-wrapper { transform: scale(1); }
+
+        .modal-box { 
+            background: #ffffff; border-radius: 12px; width: 100%; max-width: 400px; 
+            max-height: 85dvh; display: flex; flex-direction: column;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; 
+        }
+        .modal-box.large { max-width: 580px; }
+
+        .modal-content-scroll { 
+            padding: clamp(14px, 3vw, 20px); overflow-y: auto; flex-grow: 1; 
+            max-height: 55vh; 
+            scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; 
+        }
+        .modal-content-scroll::-webkit-scrollbar { width: 6px; }
+        .modal-content-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 10px; }
+        
+        .modal-footer-sticky { padding: 12px; background: #ffffff; border-top: 1px solid #e2e8f0; display: flex; gap: 8px; flex-shrink: 0; box-shadow: 0 -4px 10px rgba(0,0,0,0.02); }
+
+        .btn { 
+            padding: clamp(10px, 2vw, 14px) clamp(16px, 2.5vw, 24px); border: none; border-radius: 6px; 
+            font-weight: 800; cursor: pointer; transition: all 0.2s; background: #f1f5f9; color: var(--bf-grey); 
+            text-transform: uppercase; width: 100%; font-family: 'Inter', sans-serif; 
+            font-size: clamp(11px, 2vw, 13px); display: inline-flex; justify-content: center; align-items: center; 
+            text-align: center; line-height: 1.2; letter-spacing: 0.2px;
+        }
+        .btn:active { transform: scale(0.97); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        
+        .btn-bf-blue { background: var(--bf-blue); color: white; box-shadow: 0 2px 5px rgba(43,138,237,0.3); }
+        .btn-bf-blue:hover:not(:disabled) { background: var(--bf-blue-hover); }
+        
+        .btn-bf-pink { background: var(--bf-pink); color: #000; box-shadow: 0 2px 5px rgba(244,180,206,0.5); }
+        .btn-bf-pink:hover:not(:disabled) { background: #e8a5c0; }
+
+        .btn-inline { width: auto; flex: 1 1 auto; min-width: 110px; margin-top: 0; }
+
+        .bf-odds-box { background: var(--bf-blue-light); border: 1px solid var(--bf-blue-border); border-radius: 4px; padding: 6px 12px; text-align: center; display: inline-block;}
+        .bf-odds-value { color: var(--bf-dark); font-weight: 900; font-size: 18px; line-height: 1;}
+
+        .stake-btn { padding: 8px 4px !important; border: 1px solid #dce2e8 !important; background: #fff !important; color: var(--bf-dark) !important; font-size: 13px !important; }
+        .stake-btn.active { border-color: var(--bf-blue) !important; background: var(--bf-blue-light) !important; color: var(--bf-blue) !important; }
+
+        .highlight-back { color: var(--bf-blue); font-weight: 800; background: var(--bf-blue-light); padding: 1px 4px; border-radius: 3px; border: 1px solid var(--bf-blue-border);}
+        .highlight-lay { color: var(--bf-red); font-weight: 800; background: var(--bf-red-light); padding: 1px 4px; border-radius: 3px; border: 1px solid #fecaca;}
+        .highlight-profit { color: var(--bf-green); font-weight: 800; }
+        
+        #toast-container { position: fixed; top: 60px; left: 50%; transform: translateX(-50%); z-index: 100000; display: flex; flex-direction: column; gap: 8px; pointer-events: none; width: 90%; max-width: 400px; align-items:center;}
+        .toast { background: rgba(18, 21, 24, 0.95); backdrop-filter: blur(4px); color: #ffffff; padding: 12px 18px; border-radius: 8px; font-weight: 600; font-size: 13px; box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3); animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, fadeOut 0.4s ease 3s forwards; width: 100%; text-align:left; display: flex; align-items: center; gap: 10px;}
+        @keyframes slideDown { from { transform: translateY(-20px) scale(0.9); opacity: 0; } to { transform: translateY(0) scale(1); opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
+        
+        .bot-indicator { font-size: 9px; background: #e2e8f0; color: #475569; padding: 2px 6px; border-radius: 4px; font-weight: 900; margin-left: 6px; letter-spacing: 0.5px;}
+        .block-ui { pointer-events: none; opacity: 0.95; }
+    </style>
+</head>
+<body>
+
+    <div id="app-wrapper">
+        <div id="lang-bar">
+            <span class="lang-btn active" onclick="setLang('en')" id="btn-en">EN</span>
+            <span class="lang-btn" onclick="setLang('es')" id="btn-es">ES</span>
+            <span class="lang-btn" onclick="setLang('pt')" id="btn-pt">PT</span>
+            <span class="lang-btn" onclick="setLang('it')" id="btn-it">IT</span>
+        </div>
+
+        <div id="toast-container"></div>
+
+        <div id="board-container">
+            <div id="board-area">
+                <div id="board">
+                    <div id="center-board">
+                        <div class="pitch-line-center"></div>
+                        <div class="pitch-circle"></div>
+                        <div class="pitch-center-dot"></div>
+                        <div class="pitch-box-left"></div>
+                        <div class="pitch-box-right"></div>
+                        
+                        <img src="logo-tondo.jpeg" alt="Logo" class="center-logo" onerror="this.style.display='none';">
+                        
+                        <div class="deck-slot news"><div class="deck-stack bg-news" data-i18n="news_live">VAR<br>REVIEW</div></div>
+                        <div class="deck-slot movers"><div class="deck-stack bg-movers" data-i18n="market_mover">LIVE<br>ACTION</div></div>
+
+                        <div class="dice-area" id="dice-area" onclick="handleDiceClick()">
+                            <div class="die-wrapper" id="bounce1">
+                                <div class="die-3d" id="die1" style="transform: rotateX(-20deg) rotateY(30deg);">
+                                    <div class="die-face face-1"><div class="die-dot dot-5"></div></div>
+                                    <div class="die-face face-2"><div class="die-dot dot-1"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-3"><div class="die-dot dot-1"></div><div class="die-dot dot-5"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-4"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-5"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-5"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-6"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-4"></div><div class="die-dot dot-6"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                </div>
+                            </div>
+                            <div class="die-wrapper" id="bounce2">
+                                <div class="die-3d" id="die2" style="transform: rotateX(15deg) rotateY(-45deg);">
+                                    <div class="die-face face-1"><div class="die-dot dot-5"></div></div>
+                                    <div class="die-face face-2"><div class="die-dot dot-1"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-3"><div class="die-dot dot-1"></div><div class="die-dot dot-5"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-4"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-5"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-5"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                    <div class="die-face face-6"><div class="die-dot dot-1"></div><div class="die-dot dot-3"></div><div class="die-dot dot-4"></div><div class="die-dot dot-6"></div><div class="die-dot dot-7"></div><div class="die-dot dot-9"></div></div>
+                                </div>
+                            </div>
+                            <div class="die-wrapper" id="bounce3" style="display:none; margin-left: clamp(4px, 1vmin, 8px);">
+                                <div class="die-3d" id="dieResult" style="transform: rotateX(10deg) rotateY(20deg);">
+                                    <div class="die-result-face face-1" style="background:#25a347;">1</div>
+                                    <div class="die-result-face face-2" style="background:#eab308; color:#000;">X</div>
+                                    <div class="die-result-face face-3" style="background:#e11a28;">2</div>
+                                    <div class="die-result-face face-4" style="background:#25a347;">1</div>
+                                    <div class="die-result-face face-5" style="background:#eab308; color:#000;">X</div>
+                                    <div class="die-result-face face-6" style="background:#e11a28;">2</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ui-bottom-bar">
+            <div id="player-zones"></div>
+        </div>
+    </div>
+
+    <div id="intro-screen" class="modal-overlay" style="display: flex; background: #ffffff; opacity: 1;">
+        <div class="flex flex-col items-center justify-center text-center p-6 max-w-md w-full">
+            <div class="w-28 h-28 md:w-32 md:h-32 rounded-full flex items-center justify-center mb-6 overflow-hidden shadow-2xl shadow-blue-500/20 border-4 border-slate-100">
+                <img src="logo-tondo.jpeg" alt="Logo" class="w-full h-full object-cover" onerror="this.outerHTML='<span class=\'text-6xl\'>⚽</span>'">
+            </div>
+            <h1 class="font-heading font-black text-2xl md:text-4xl text-slate-900 mb-2 leading-tight tracking-tight uppercase">Betting Exchange<br><span class="text-[#2b8aed]">Room</span></h1>
+            <p class="mt-4 text-slate-600 font-medium text-xs md:text-sm mb-8 leading-relaxed max-w-sm" data-i18n="intro_desc">
+                Learn Back & Lay trading. World Cup 2026 Simulator. Play against friends or the PC to master sports markets.
+            </p>
+            <button class="btn btn-bf-blue shadow-lg shadow-blue-500/30 py-4 text-sm md:text-base w-full max-w-xs mb-3" onclick="hideIntro()" data-i18n="start_sim">START SIMULATION</button>
+            <button class="btn bg-transparent border-2 border-slate-200 text-slate-500 hover:border-slate-300 hover:bg-slate-50 w-full max-w-xs" onclick="showInstructions()" data-i18n="read_concept">HOW TO PLAY</button>
+        </div>
+    </div>
+
+    <div id="modal-instructions" class="modal-overlay">
+        <div class="modal-box-wrapper">
+            <div class="modal-box large">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+                    <h2 class="text-lg md:text-xl font-black text-[#2b8aed] font-heading uppercase tracking-wide" data-i18n="concept_title">HOW TO PLAY</h2>
+                </div>
+                <div class="modal-content-scroll text-xs md:text-[13px] text-slate-700 leading-relaxed space-y-4 md:space-y-5" id="rules-content"></div>
+                <div class="modal-footer-sticky">
+                    <button class="btn btn-bf-blue w-full" onclick="hideInstructions()" data-i18n="btn_close">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-setup" class="modal-overlay">
+        <div class="modal-box-wrapper">
+            <div class="modal-box">
+                <div class="p-4 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+                    <h1 class="text-lg font-black text-slate-800 font-heading uppercase tracking-tight" data-i18n="setup_title">Match Setup</h1>
+                </div>
+                
+                <div class="modal-content-scroll">
+                    <div class="mb-4 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <label class="text-[11px] font-bold text-slate-500 mb-1.5 block uppercase tracking-wide" data-i18n="game_mode">Game Mode:</label>
+                        <select id="mode-select" class="w-full p-2 rounded border border-slate-300 font-bold text-slate-700 outline-none text-sm" onchange="updateSetupMode()">
+                            <option value="bot" data-i18n="mode_bot">1 Player vs PC (Bot)</option>
+                            <option value="multi" data-i18n="mode_multi">Multiplayer (Pass & Play)</option>
+                        </select>
+                    </div>
+
+                    <div id="setup-players" class="flex flex-col gap-2"></div>
+                </div>
+
+                <div class="modal-footer-sticky">
+                    <button class="btn btn-inline" onclick="addSetupPlayer()" id="btn-add-p" style="display:none;" data-i18n="btn_add_player">+ PLAYER</button>
+                    <button class="btn btn-bf-blue btn-inline" onclick="startGame()" data-i18n="btn_open_markets">KICK OFF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-action" class="modal-overlay">
+        <div class="modal-box-wrapper">
+            <div class="modal-box" id="action-content" style="max-width: 380px;">
+                <!-- Content injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-bet" class="modal-overlay">
+        <div class="modal-box-wrapper">
+            <div class="modal-box" style="max-width: 380px;">
+                
+                <div class="bg-[#2b8aed] text-white font-bold text-xs md:text-sm py-3 px-4 flex-shrink-0 flex justify-between items-center">
+                    <span data-i18n="back_bet_title">PLACE A BACK BET</span>
+                    <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded uppercase font-black">BACK</span>
+                </div>
+                
+                <div class="modal-content-scroll bg-slate-50 pb-2">
+                    <div class="bg-white border border-slate-200 rounded-md p-3 mb-4 shadow-sm text-center">
+                        <div class="text-[10px] text-slate-400 font-bold uppercase mb-1" data-i18n="market_managed_by">Market managed by</div>
+                        <div id="bet-owner-name" class="font-bold text-sm text-slate-700 mb-2">Name</div>
+                        <h2 class="text-sm md:text-base font-black text-slate-900 uppercase tracking-tight leading-tight" id="bet-match-name">Match</h2>
+                    </div>
+                    
+                    <div class="flex items-center justify-between bg-white border border-slate-200 p-3 rounded-md mb-4 shadow-sm">
+                        <div class="flex flex-col items-start">
+                            <span class="text-[10px] md:text-[11px] font-bold text-slate-500 uppercase mb-1" data-i18n="req_outcome">Required Outcome:</span>
+                            <div id="bet-outcome-req" class="text-lg font-black w-8 h-8 flex items-center justify-center rounded border">1</div>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <div class="bf-odds-box">
+                                <div class="bf-odds-value" id="bet-odds-display">2.00</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-[10px] font-bold text-slate-500 mb-1.5 uppercase tracking-wider" data-i18n="select_stake">Select Stake:</label>
+                        <div class="grid grid-cols-3 gap-2">
+                            <button class="btn stake-btn" onclick="selectStake(100)">€ 100</button>
+                            <button class="btn stake-btn" onclick="selectStake(500)">€ 500</button>
+                            <button class="btn stake-btn" onclick="selectStake(1000)">€ 1000</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white border border-slate-200 p-3 rounded-md text-xs md:text-[13px] shadow-sm">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
+                            <span class="font-semibold text-slate-600" data-i18n="your_stake">Your Stake (Back):</span>
+                            <span class="font-black text-[#2b8aed]">€ <span id="preview-stake">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-1.5 mb-1.5">
+                            <span class="font-semibold text-slate-600" data-i18n="pot_profit">Potential Profit:</span>
+                            <span class="font-black text-[#25a347]">+ € <span id="preview-win">0</span></span>
+                        </div>
+                        <div class="flex justify-between items-center pt-0.5">
+                            <span class="text-[10px] text-slate-400 font-bold uppercase flex items-center gap-1">
+                                <svg class="w-3 h-3 text-[#e11a28]" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                                <span data-i18n="bank_liability">Bank Liability:</span>
+                            </span>
+                            <span class="font-bold text-[#e11a28]">€ <span id="preview-liability">0</span></span>
+                        </div>
+                    </div>
+                    
+                    <div id="liability-warning" class="text-[10px] md:text-[11px] text-[#e11a28] font-bold mt-2 hidden text-left bg-[#fef0f2] p-2 rounded border border-[#fecaca] leading-tight"></div>
+                </div>
+
+                <div class="modal-footer-sticky bg-slate-50">
+                    <button class="btn" id="btn-pass-bet" onclick="skipBet()" data-i18n="btn_pass">PASS</button>
+                    <button class="btn btn-bf-blue" id="btn-confirm-bet" disabled onclick="confirmAndRollMatch()" data-i18n="btn_bet_resolve">PLACE BET</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tknDefs = `
+            <defs>
+                <radialGradient id="ballGrad" cx="30%" cy="30%" r="70%">
+                    <stop offset="0%" stop-color="#ffffff"/>
+                    <stop offset="100%" stop-color="#94a3b8"/>
+                </radialGradient>
+                <linearGradient id="cupGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#fde047"/>
+                    <stop offset="50%" stop-color="#eab308"/>
+                    <stop offset="100%" stop-color="#a16207"/>
+                </linearGradient>
+                <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#60a5fa"/>
+                    <stop offset="100%" stop-color="#2563eb"/>
+                </linearGradient>
+                <linearGradient id="shirtGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stop-color="#ef4444"/>
+                    <stop offset="100%" stop-color="#991b1b"/>
+                </linearGradient>
+            </defs>
+        `;
+
+        const tokenSVGs = {
+            'ball': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
+                <circle cx="50" cy="50" r="45" fill="url(#ballGrad)" stroke="#1a2228" stroke-width="2"/>
+                <path d="M 50 25 L 30 40 L 35 65 L 65 65 L 70 40 Z" fill="#1a2228"/>
+                <path d="M 50 25 L 50 5 M 30 40 L 10 35 M 70 40 L 90 35 M 35 65 L 20 85 M 65 65 L 80 85" stroke="#1a2228" stroke-width="4"/>
+            </svg>`,
+            'cup': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
+                <path d="M 20 20 C 20 50 40 60 45 65 L 45 85 L 30 85 L 30 95 L 70 95 L 70 85 L 55 85 L 55 65 C 60 60 80 50 80 20 Z" fill="url(#cupGrad)" stroke="#451a03" stroke-width="2"/>
+                <path d="M 20 25 C 5 25 5 45 25 45 M 80 25 C 95 25 95 45 75 45" fill="none" stroke="url(#cupGrad)" stroke-width="8" stroke-linecap="round"/>
+                <ellipse cx="50" cy="20" rx="30" ry="8" fill="#fef08a" stroke="#451a03" stroke-width="2"/>
+            </svg>`,
+            'shield': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
+                <path d="M 20 15 L 80 15 L 80 40 C 80 70 50 90 50 90 C 50 90 20 70 20 40 Z" fill="url(#shieldGrad)" stroke="#1e3a8a" stroke-width="3"/>
+                <path d="M 25 20 L 75 20 L 75 40 C 75 65 50 82 50 82 C 50 82 25 65 25 40 Z" fill="none" stroke="#bfdbfe" stroke-width="2"/>
+                <circle cx="50" cy="45" r="15" fill="#fcd34d"/>
+            </svg>`,
+            'shirt': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
+                <path d="M 30 15 L 70 15 L 90 40 L 75 50 L 70 35 L 70 90 L 30 90 L 30 35 L 25 50 L 10 40 Z" fill="url(#shirtGrad)" stroke="#450a0a" stroke-width="2"/>
+                <path d="M 40 15 C 40 25 60 25 60 15" fill="none" stroke="#fca5a5" stroke-width="3"/>
+                <text x="50" y="65" font-family="Montserrat" font-weight="900" font-size="28" fill="#ffffff" text-anchor="middle">10</text>
+            </svg>`
+        };
+
+        const tokensLib = [ {id: 'ball', name: 'Ball'}, {id: 'cup', name: 'Trophy'}, {id: 'shield', name: 'Shield'}, {id: 'shirt', name: 'Jersey'} ];
+
+        const i18n = {
+            en: {
+                intro_desc: "Learn Back & Lay trading. World Cup 2026 Simulator. Play against friends or the PC to master sports markets.",
+                start_sim: "START SIMULATION", read_concept: "HOW TO PLAY", concept_title: "HOW TO PLAY", btn_close: "CLOSE",
+                setup_title: "Match Setup", mode_bot: "1 Player vs PC (Bot)", mode_multi: "Multiplayer (Pass & Play)", btn_add_player: "+ PLAYER", btn_open_markets: "KICK OFF", game_mode: "Game Mode:",
+                back_bet_title: "PLACE A BACK BET", req_outcome: "Outcome Required:", market_managed_by: "Lay Market managed by", offered_odds: "Odds:",
+                select_stake: "Select Stake:", your_stake: "Your Stake (Back):", pot_profit: "Potential Profit:", bank_liability: "Bank Liability:",
+                btn_pass: "PASS", btn_bet_resolve: "PLACE BET", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
+                
+                rules_html: `
+                    <div class="space-y-4 text-left">
+                        <p class="font-medium text-slate-800">Welcome to the <b>Betting Exchange Simulator</b>. Learn how real markets work without financial risk!</p>
+                        
+                        <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
+                            <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Game Modes</h3>
+                            <p class="text-xs mb-2"><b>1 Player vs PC:</b> The Bot calculates the best math-based moves automatically. <u>You act as the dealer for the Bot</u>, so you must click its highlighted choices to confirm them and proceed.</p>
+                            <p class="text-xs"><b>Multiplayer:</b> Pass the device to your friends when it's their turn.</p>
+                        </div>
+
+                        <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Buy a Match = Become the Bank (Lay)</h3>
+                            <p class="text-xs">Land on a free match to buy the License. You act as the <b>Bank (Lay)</b> offering fixed odds. When opponents land on it, they bet against you. The money you risk to pay them is called <span class="highlight-lay">Liability</span>.</p>
+                        </div>
+
+                        <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Land on a Match = Place a Bet (Back)</h3>
+                            <p class="text-xs">If you land on an opponent's match, you place a <span class="highlight-back">Back bet</span>. You choose the Stake. If your bet wins, you get the Profit. If you lose, the Bank keeps your Stake.</p>
+                        </div>
+
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 The Liquidity Rule</h3>
+                            <p class="text-xs">If the Bank (owner) doesn't have enough money to cover the Liability of your bet, your maximum Stake is <b>automatically capped</b> to match what they can afford to pay!</p>
+                        </div>
+                    </div>
+                `,
+                
+                tutor_win_title: "WINNING OUTCOME!", tutor_lose_title: "LOSING OUTCOME",
+                tutor_header: "THE BROKER'S CORNER",
+                tutor_win_text: "🎲 The rolled outcome is: <b class='text-[#25a347] text-lg ml-1 px-1.5 py-0.5 border border-green-200 bg-green-50 rounded shadow-sm'>{0}</b><br><br>✅ <b>You guessed right!</b> Your Back bet won.<br>You get your <span class='highlight-back'>Stake € {1}</span> back and collect <span class='highlight-profit'>+ € {2} Profit</span>.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>Where does the money come from?</span>The Bank ({3}) loses their <span class='highlight-lay'>Liability of € {4}</span> to pay you.",
+                tutor_lose_text: "🎲 The rolled outcome is: <b class='text-[#e11a28] text-lg ml-1 px-1.5 py-0.5 border border-red-200 bg-red-50 rounded shadow-sm'>{0}</b><br><br>❌ <b>Wrong prediction.</b> Your Back bet lost.<br>Your <span class='text-slate-500 line-through font-bold'>Stake of € {1}</span> is lost forever.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>Where does it go?</span>The Bank ({2}) wins your Stake as Profit. They also unlock their Liability of € {3}.",
+                btn_continue: "UPDATE & CONTINUE",
+                
+                free_market: "Free Market", acquire_license: "Acquire license to act as the <b>Bank (Lay)</b>?",
+                license_cost: "License Cost: € {0}", btn_open_market: "OPEN MARKET",
+                your_market: "This is your market.", btn_end_turn: "END TURN",
+                
+                tax_title: "BROKER FEE", tax_desc: "Exchange platform operational fee.", btn_pay: "PAY € {0}",
+                kyc_title: "ACCOUNT REVIEW", kyc_desc: "Security check. Account suspended temporarily.", btn_kyc: "WAIT",
+                neutral_desc: "Half time. Take a breath.", btn_continue_neutral: "CONTINUE",
+                
+                toast_need_2: "Need at least 2 Players.", toast_pass: "You passed the turn.", toast_matched: "Bet matched! Rolling outcome...",
+                toast_license: "✅ License Acquired! You are the Bank.", toast_no_funds: "❌ Insufficient funds.", toast_bankrupt: "🚨 BANKRUPTCY for {0}!",
+                toast_salary: "💰 Group Stage Bonus! +€ 5,000", toast_winner: "🏆 TOURNAMENT OVER! {0} WINS!",
+                
+                warn_liq: "⚠️ Low Liquidity! The Bank ({2}) only has € {0} left. Max Stake capped to € {1}.",
+                warn_funds: "⚠️ Insufficient Funds! Stake limited to: € {0}.",
+                
+                card_market: "Match", card_odds: "Odds", card_banco_yes: "<b>You are the Bank.</b> Keep balance for Liabilities.",
+                card_banco_no: "Buy the license to act as <b>Bank</b>."
+            },
+            it: {
+                intro_desc: "Simulatore di Betting Exchange. Mondiali 2026. Impara il Punta & Banca sfidando il PC o gli amici.",
+                start_sim: "INIZIA SIMULAZIONE", read_concept: "COME GIOCARE", concept_title: "IL CONCEPT", btn_close: "CHIUDI",
+                setup_title: "Impostazioni", mode_bot: "1 Giocatore vs PC (Bot)", mode_multi: "Multiplayer (Passa il Dispositivo)", btn_add_player: "+ GIOCATORE", btn_open_markets: "CALCIO D'INIZIO", game_mode: "Modalità:",
+                back_bet_title: "PIAZZA SCOMMESSA", req_outcome: "Esito Richiesto:", market_managed_by: "Mercato bancato da", offered_odds: "Quota fissa:",
+                select_stake: "Seleziona Stake:", your_stake: "Tuo Stake (Punta):", pot_profit: "Profitto Potenziale:", bank_liability: "Responsabilità Banco:",
+                btn_pass: "PASSA", btn_bet_resolve: "SCOMMETTI", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
+                
+                rules_html: `
+                    <div class="space-y-4 text-left">
+                        <p class="font-medium text-slate-800">Benvenuto nel <b>Simulatore Betting Exchange</b>. Impara le dinamiche reali senza rischi finanziari!</p>
+                        
+                        <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
+                            <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modalità di Gioco</h3>
+                            <p class="text-xs mb-2"><b>1 Giocatore vs PC:</b> Il Bot decide matematicamente le mosse migliori in automatico. <u>Tu fai da 'Dealer' per il Bot</u>: dovrai cliccare sui pulsanti da lui evidenziati per confermare le azioni e proseguire.</p>
+                            <p class="text-xs"><b>Multiplayer:</b> Passatevi il dispositivo a ogni turno!</p>
+                        </div>
+
+                        <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Comprare un Match = Fare il Banco (Lay)</h3>
+                            <p class="text-xs">Cadi su un match libero per comprare la Licenza. Agisci come <b>Banco (Lay)</b> offrendo quote fisse. Gli avversari scommetteranno contro di te. I soldi che rischi per pagarli sono la <span class="highlight-lay">Responsabilità</span>.</p>
+                        </div>
+
+                        <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Caderci Sopra = Puntare (Back)</h3>
+                            <p class="text-xs">Se cadi sul match di un avversario, piazzi una <span class="highlight-back">Puntata (Back)</span>. Scegli lo Stake. Se vinci, incassi il Profitto. Se perdi, il Banco trattiene il tuo Stake.</p>
+                        </div>
+
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 La Regola della Liquidità</h3>
+                            <p class="text-xs">Se il Banco non ha abbastanza fondi per coprire la Responsabilità della tua vincita, il tuo Stake massimo viene <b>limitato automaticamente</b> in base a ciò che il Banco può pagare!</p>
+                        </div>
+                    </div>
+                `,
+                
+                tutor_win_title: "ESITO VINCENTE!", tutor_lose_title: "ESITO PERDENTE",
+                tutor_header: "L'ANGOLO DEL BROKER",
+                tutor_win_text: "🎲 L'esito uscito è: <b class='text-[#25a347] text-lg ml-1 px-1.5 py-0.5 border border-green-200 bg-green-50 rounded shadow-sm'>{0}</b><br><br>✅ <b>Hai indovinato!</b> La tua Puntata (Back) ha vinto.<br>Ti torna lo <span class='highlight-back'>Stake di € {1}</span> e incassi <span class='highlight-profit'>+ € {2} di Profitto</span>.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>Da dove arrivano i soldi?</span>Il Banco ({3}) perde la sua <span class='highlight-lay'>Responsabilità di € {4}</span> per pagarti.",
+                tutor_lose_text: "🎲 L'esito uscito è: <b class='text-[#e11a28] text-lg ml-1 px-1.5 py-0.5 border border-red-200 bg-red-50 rounded shadow-sm'>{0}</b><br><br>❌ <b>Previsione errata.</b> La tua Puntata ha perso.<br>Il tuo <span class='text-slate-500 line-through font-bold'>Stake di € {1}</span> è perso.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>Dove finiscono i soldi?</span>Il Banco ({2}) vince il tuo Stake come Profitto. E sblocca la sua Responsabilità di € {3}.",
+                btn_continue: "AGGIORNA SALDI E CONTINUA",
+                
+                free_market: "Mercato Libero", acquire_license: "Vuoi agire come <b>Banco (Lay)</b> per questo match?",
+                license_cost: "Costo Licenza: € {0}", btn_open_market: "APRI MERCATO",
+                your_market: "Questo mercato è tuo.", btn_end_turn: "FINE TURNO",
+                
+                tax_title: "COMMISSIONI", tax_desc: "Costi operativi della piattaforma.", btn_pay: "PAGA € {0}",
+                kyc_title: "REVISIONE CONTO", kyc_desc: "Controllo di sicurezza. Conto sospeso.", btn_kyc: "ATTENDI",
+                neutral_desc: "Intervallo. Riprendi fiato.", btn_continue_neutral: "CONTINUA",
+                
+                toast_need_2: "Servono almeno 2 Giocatori.", toast_pass: "Hai passato il turno.", toast_matched: "Scommessa abbinata! Lancio dado...",
+                toast_license: "✅ Licenza Acquisita! Sei il Banco.", toast_no_funds: "❌ Fondi insufficienti.", toast_bankrupt: "🚨 BANCAROTTA per {0}!",
+                toast_salary: "💰 Bonus Gironi! +€ 5.000", toast_winner: "🏆 TORNEO CONCLUSO! {0} VINCE!",
+                
+                warn_liq: "⚠️ Liquidità Bassa! Il Banco ({2}) ha solo € {0}. Stake limitato a € {1}.",
+                warn_funds: "⚠️ Fondi Insufficienti! Stake limitato a: € {0}.",
+                
+                card_market: "Match", card_odds: "Quota", card_banco_yes: "<b>Sei il Banco.</b> Mantieni fondi per la Responsabilità.",
+                card_banco_no: "Compra la Licenza per fare il <b>Banco</b>."
+            },
+            es: {
+                intro_desc: "Simulador Betting Exchange. Mundial 2026. Aprende Back & Lay contra el PC o amigos.",
+                start_sim: "INICIAR SIMULACIÓN", read_concept: "CÓMO JUGAR", concept_title: "CÓMO JUGAR", btn_close: "CERRAR",
+                setup_title: "Configuración", mode_bot: "1 Jugador vs PC (Bot)", mode_multi: "Multijugador (Pasa y Juega)", btn_add_player: "+ JUGADOR", btn_open_markets: "SAQUE INICIAL", game_mode: "Modo:",
+                back_bet_title: "APUESTA A FAVOR", req_outcome: "Resultado:", market_managed_by: "Mercado bancado por", offered_odds: "Cuota:",
+                select_stake: "Elige Stake:", your_stake: "Tu Stake (Back):", pot_profit: "Beneficio Potencial:", bank_liability: "Riesgo Banco (Lay):",
+                btn_pass: "PASAR", btn_bet_resolve: "APOSTAR", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
+                
+                rules_html: `
+                    <div class="space-y-4 text-left">
+                        <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
+                            <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modos de Juego</h3>
+                            <p class="text-xs mb-2"><b>1 Jugador vs PC:</b> El Bot decide basado en matemáticas automáticamente. <u>Tú actúas como repartidor (dealer)</u>, por lo que debes hacer clic para confirmar las acciones del Bot.</p>
+                            <p class="text-xs"><b>Multijugador:</b> ¡Pasa el dispositivo a tus amigos!</p>
+                        </div>
+                        <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Comprar Match = Ser el Banco (Lay)</h3>
+                            <p class="text-xs">Eres el <b>Banco (Lay)</b> ofreciendo cuotas. Tu riesgo al pagar ganadores se llama <span class="highlight-lay">Riesgo (Liability)</span>.</p>
+                        </div>
+                        <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Caer Encima = Apostar (Back)</h3>
+                            <p class="text-xs">Si caes en el match de otro, haces un <span class="highlight-back">Back</span>. Si ganas, te llevas el beneficio. Si pierdes, el Banco se queda tu Stake.</p>
+                        </div>
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 Regla de Liquidez</h3>
+                            <p class="text-xs">Si el Banco no tiene fondos para cubrir el Riesgo, tu Stake máximo <b>se reduce automáticamente</b>.</p>
+                        </div>
+                    </div>
+                `,
+                
+                tutor_win_title: "¡GANASTE!", tutor_lose_title: "PERDISTE",
+                tutor_header: "RINCÓN DEL BROKER",
+                tutor_win_text: "🎲 Resultado: <b class='text-[#25a347] text-lg ml-1 px-1.5 py-0.5 border border-green-200 bg-green-50 rounded shadow-sm'>{0}</b><br><br>✅ <b>¡Acertaste!</b><br>Recuperas <span class='highlight-back'>Stake € {1}</span> y ganas <span class='highlight-profit'>+ € {2}</span>.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>¿De dónde viene el dinero?</span>El Banco ({3}) pierde su <span class='highlight-lay'>Riesgo de € {4}</span> para pagarte.",
+                tutor_lose_text: "🎲 Resultado: <b class='text-[#e11a28] text-lg ml-1 px-1.5 py-0.5 border border-red-200 bg-red-50 rounded shadow-sm'>{0}</b><br><br>❌ <b>Fallaste.</b><br>Tu <span class='text-slate-500 line-through font-bold'>Stake de € {1}</span> se pierde.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>¿Dónde va?</span>El Banco ({2}) gana tu Stake y desbloqueea su Riesgo de € {3}.",
+                btn_continue: "CONTINUAR",
+                
+                free_market: "Mercado Libre", acquire_license: "¿Ser el <b>Banco (Lay)</b> para este match?",
+                license_cost: "Costo: € {0}", btn_open_market: "ABRIR MERCADO",
+                your_market: "Este es tu mercado.", btn_end_turn: "FIN TURNO",
+                
+                tax_title: "COMISIÓN", tax_desc: "Costos de plataforma.", btn_pay: "PAGA € {0}",
+                kyc_title: "REVISIÓN", kyc_desc: "Control de seguridad. Suspendido.", btn_kyc: "ESPERAR",
+                neutral_desc: "Descanso.", btn_continue_neutral: "CONTINUAR",
+                
+                toast_need_2: "Mínimo 2 Jugadores.", toast_pass: "Pasaste el turno.", toast_matched: "¡Apuesta igualada! Lanzando...",
+                toast_license: "✅ ¡Eres el Banco!", toast_no_funds: "❌ Fondos insuficientes.", toast_bankrupt: "🚨 ¡BANCARROTA para {0}!",
+                toast_salary: "💰 ¡Bonus! +€ 5.000", toast_winner: "🏆 ¡{0} GANA!",
+                
+                warn_liq: "⚠️ ¡Baja Liquidez! Banco ({2}) tiene € {0}. Stake max: € {1}.",
+                warn_funds: "⚠️ ¡Fondos Insuficientes! Stake limitado: € {0}.",
+                
+                card_market: "Match", card_odds: "Cuota", card_banco_yes: "<b>Eres el Banco.</b>",
+                card_banco_no: "Compra Licencia de <b>Banco</b>."
+            },
+            pt: {
+                intro_desc: "Simulador Betting Exchange. Copa 2026. Aprenda Back & Lay contra o PC ou amigos.",
+                start_sim: "INICIAR SIMULAÇÃO", read_concept: "COMO JOGAR", concept_title: "COMO JOGAR", btn_close: "FECHAR",
+                setup_title: "Configuração", mode_bot: "1 Jogador vs PC (Bot)", mode_multi: "Multijogador (Pasa e Joga)", btn_add_player: "+ JOGADOR", btn_open_markets: "PONTAPÉ INICIAL", game_mode: "Modo:",
+                back_bet_title: "APOSTAR A FAVOR", req_outcome: "Resultado:", market_managed_by: "Mercado gerido por", offered_odds: "Odd:",
+                select_stake: "Escolha Stake:", your_stake: "Seu Stake (Back):", pot_profit: "Lucro Potencial:", bank_liability: "Responsabilidade:",
+                btn_pass: "PASSAR", btn_bet_resolve: "APOSTAR", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
+                
+                rules_html: `
+                    <div class="space-y-4 text-left">
+                        <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
+                            <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modos de Jogo</h3>
+                            <p class="text-xs mb-2"><b>1 Jogador vs PC:</b> O Bot decide matematicamente. <u>Você atua como dealer</u> e deve clicar para confirmar as ações do Bot e prosseguir.</p>
+                            <p class="text-xs"><b>Multijogador:</b> Passe o dispositivo para seus amigos!</p>
+                        </div>
+                        <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Comprar Match = Ser o Banco (Lay)</h3>
+                            <p class="text-xs">És o <b>Banco (Lay)</b> oferecendo odd. O teu risco chama-se <span class="highlight-lay">Responsabilidade</span>.</p>
+                        </div>
+                        <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Cair em Cima = Apostar (Back)</h3>
+                            <p class="text-xs">Se caíres no match de outro, fazes um <span class="highlight-back">Back</span>. Se ganhares, levas o lucro.</p>
+                        </div>
+                        <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
+                            <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 Regra de Liquidez</h3>
+                            <p class="text-xs">Se o Banco não tiver fundos, o teu Stake máximo <b>é reduzido automaticamente</b>.</p>
+                        </div>
+                    </div>
+                `,
+                
+                tutor_win_title: "GANHASTE!", tutor_lose_title: "PERDESTE",
+                tutor_header: "CANTINHO DO BROKER",
+                tutor_win_text: "🎲 Resultado: <b class='text-[#25a347] text-lg ml-1 px-1.5 py-0.5 border border-green-200 bg-green-50 rounded shadow-sm'>{0}</b><br><br>✅ <b>Acertaste!</b><br>Recuperas <span class='highlight-back'>Stake € {1}</span> e ganhas <span class='highlight-profit'>+ € {2}</span>.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>De onde vem o dinheiro?</span>O Banco ({3}) perde a <span class='highlight-lay'>Responsabilidade de € {4}</span> para te pagar.",
+                tutor_lose_text: "🎲 Resultado: <b class='text-[#e11a28] text-lg ml-1 px-1.5 py-0.5 border border-red-200 bg-red-50 rounded shadow-sm'>{0}</b><br><br>❌ <b>Erraste.</b><br>O teu <span class='text-slate-500 line-through font-bold'>Stake de € {1}</span> perde-se.<br><br><span class='text-[10px] text-slate-500 font-bold uppercase block mt-2'>Para onde vai?</span>O Banco ({2}) ganha o Stake e desbloqueia a Responsabilidade de € {3}.",
+                btn_continue: "CONTINUAR",
+                
+                free_market: "Mercado Livre", acquire_license: "Ser o <b>Banco (Lay)</b> para este match?",
+                license_cost: "Custo: € {0}", btn_open_market: "ABRIR MERCADO",
+                your_market: "O teu mercado.", btn_end_turn: "FIM TURNO",
+                
+                tax_title: "COMISSÃO", tax_desc: "Custos de plataforma.", btn_pay: "PAGAR € {0}",
+                kyc_title: "REVISÃO", kyc_desc: "Controlo de segurança.", btn_kyc: "ESPERAR",
+                neutral_desc: "Intervalo.", btn_continue_neutral: "CONTINUAR",
+                
+                toast_need_2: "Mínimo 2 Jogadores.", toast_pass: "Passaste o turno.", toast_matched: "Aposta correspondida! Lançando...",
+                toast_license: "✅ És o Banco!", toast_no_funds: "❌ Fundos insuficientes.", toast_bankrupt: "🚨 BANCARROTA para {0}!",
+                toast_salary: "💰 Bónus! +€ 5.000", toast_winner: "🏆 {0} GANHA!",
+                
+                warn_liq: "⚠️ Baixa Liquidez! Banco ({2}) tem € {0}. Stake max: € {1}.",
+                warn_funds: "⚠️ Fundos Insuficientes! Stake limitado: € {0}.",
+                
+                card_market: "Match", card_odds: "Odd", card_banco_yes: "<b>És o Banco.</b>",
+                card_banco_no: "Compra a Licença de <b>Banco</b>."
+            }
+        };
+
+        let currentLang = 'en';
+        function detectLang() {
+            const l = (navigator.language || navigator.userLanguage).slice(0,2).toLowerCase();
+            return ['en','es','pt','it'].includes(l) ? l : 'en';
+        }
+
+        function setLang(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.id === `btn-${lang}`));
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if(i18n[currentLang][key]) el.innerHTML = i18n[currentLang][key];
+            });
+            initBoard();
+        }
+
+        function t(key, ...args) {
+            let str = i18n[currentLang][key] || key;
+            args.forEach((arg, i) => str = str.replace(`{${i}}`, arg));
+            return str;
+        }
+
+        const C = { G1: '#1d4ed8', G2: '#047857', G3: '#be123c', G4: '#c2410c' };
+        let gameState = { players: [], currentPlayerIdx: 0, properties: {}, isMoving: false, lastResult: null, isBotMode: false };
+
+        function getBoardData() {
+            return [
+                { id: 0, type: 'corner', name: "KICK OFF", icon: "⚽" },
+                { id: 1, type: 'property', name: "USA vs MEX", color: C.G1, openCost: 2000, odds: 2.20, defaultOutcome: '1' },
+                { id: 2, type: 'property', name: "ARG vs COL", color: C.G1, openCost: 2500, odds: 1.80, defaultOutcome: '1' },
+                { id: 3, type: 'chance', deck: 'news', icon: "🖥️" },
+                { id: 4, type: 'property', name: "BRA vs URU", color: C.G1, openCost: 2500, odds: 2.10, defaultOutcome: 'X' },
+                { id: 5, type: 'tax', cost: 1000, icon: "💸" },
+                { id: 6, type: 'property', name: "ENG vs SEN", color: C.G2, openCost: 3000, odds: 1.50, defaultOutcome: '1' },
+                { id: 7, type: 'property', name: "ESP vs MAR", color: C.G2, openCost: 3000, odds: 1.90, defaultOutcome: '1' },
+                
+                { id: 8, type: 'corner', name: "VAR REVIEW", icon: "🛑" },
+                
+                { id: 9, type: 'property', name: "GER vs JPN", color: C.G2, openCost: 3500, odds: 3.20, defaultOutcome: '2' },
+                { id: 10, type: 'chance', deck: 'movers', icon: "📈" },
+                { id: 11, type: 'property', name: "FRA vs NED", color: C.G2, openCost: 3500, odds: 2.40, defaultOutcome: 'X' },
+                
+                { id: 12, type: 'corner', name: "HALF TIME", icon: "⏱️" },
+                
+                { id: 13, type: 'property', name: "POR vs CAN", color: C.G3, openCost: 4000, odds: 1.40, defaultOutcome: '1' },
+                { id: 14, type: 'property', name: "CRO vs USA", color: C.G3, openCost: 4000, odds: 2.80, defaultOutcome: '2' },
+                { id: 15, type: 'tax', cost: 1500, icon: "📊" },
+                { id: 16, type: 'property', name: "BEL vs KOR", color: C.G3, openCost: 4500, odds: 1.65, defaultOutcome: '1' },
+                { id: 17, type: 'chance', deck: 'news', icon: "🖥️" },
+                { id: 18, type: 'property', name: "ARG vs BRA", color: C.G3, openCost: 4500, odds: 2.50, defaultOutcome: 'X' },
+                { id: 19, type: 'property', name: "ESP vs GER", color: C.G4, openCost: 5000, odds: 2.30, defaultOutcome: '1' },
+                
+                { id: 20, type: 'corner', name: "VAR REVIEW", icon: "🛑" },
+                
+                { id: 21, type: 'property', name: "FRA vs ENG", color: C.G4, openCost: 5500, odds: 2.20, defaultOutcome: '2' },
+                { id: 22, type: 'property', name: "POR vs ARG", color: C.G4, openCost: 6000, odds: 2.70, defaultOutcome: 'X' },
+                { id: 23, type: 'property', name: "BRA vs FRA", color: C.G4, openCost: 8000, odds: 2.00, defaultOutcome: '1' }
+            ];
+        }
+
+        const cellPos = {
+            0: {c:9, r:5}, 1: {c:8, r:5}, 2: {c:7, r:5}, 3: {c:6, r:5}, 4: {c:5, r:5}, 5: {c:4, r:5}, 6: {c:3, r:5}, 7: {c:2, r:5},
+            8: {c:1, r:5}, 9: {c:1, r:4}, 10: {c:1, r:3}, 11: {c:1, r:2},
+            12: {c:1, r:1}, 13: {c:2, r:1}, 14: {c:3, r:1}, 15: {c:4, r:1}, 16: {c:5, r:1}, 17: {c:6, r:1}, 18: {c:7, r:1}, 19: {c:8, r:1},
+            20: {c:9, r:1}, 21: {c:9, r:2}, 22: {c:9, r:3}, 23: {c:9, r:4}
+        };
+
+        function initBoard() {
+            const board = document.getElementById('board'); 
+            document.querySelectorAll('.cell').forEach(c => c.remove());
+            const fragment = document.createDocumentFragment(); 
+            
+            getBoardData().forEach(data => {
+                const cell = document.createElement('div'); 
+                cell.className = `cell ${data.type === 'corner' ? 'corner' : ''}`; cell.id = `cell-${data.id}`;
+                const pos = cellPos[data.id]; cell.style.gridColumn = pos.c; cell.style.gridRow = pos.r;
+                
+                if(data.id > 0 && data.id < 8) cell.classList.add("bottom-row");
+                else if(data.id > 8 && data.id < 12) cell.classList.add("left-col");
+                else if(data.id > 12 && data.id < 20) cell.classList.add("top-row");
+                else if(data.id > 20 && data.id < 24) cell.classList.add("right-col");
+
+                let html = `<div class="cell-content">`;
+                if (data.type === 'property') {
+                    html += `<div class="color-bar" id="cb-${data.id}">
+                                <span class="outcome-badge">${data.defaultOutcome}</span>
+                             </div>
+                             <div class="property-name">${data.name.replace(/ vs /g, '<br>vs<br>')}</div>
+                             <div class="property-price">${data.odds.toFixed(2)}</div>`;
+                } else if (data.type === 'tax') {
+                    html += `<div class="property-name" style="padding-top:10%;">${t('tax_title')}</div><div style="font-size: clamp(14px, 4cqi, 34px); margin:auto;">${data.icon}</div>`;
+                    if(data.cost) html += `<div class="property-price" style="color:var(--bf-red); border-color:#fecaca; background:#fef0f2;">- € ${data.cost}</div>`;
+                } else if (data.type === 'chance') {
+                     html += `<div class="property-name" style="padding-top:10%; color:${data.deck==='news'?'#0ea5e9':'#f43f5e'};">${t(data.deck==='news'?'news_live':'market_mover')}</div><div style="font-size: clamp(14px, 4cqi, 34px); margin:auto;">${data.icon}</div>`;
+                } else {
+                    html += `<div class="property-name" style="padding-top:5%; height:30%; font-size:clamp(8px, 12cqmin, 16px); color:#fff;">${data.id===8?t('kyc_title'):data.id===20?t('kyc_title'):data.name}</div>
+                             <div style="font-size: clamp(18px, 15cqmin, 44px); margin:auto;">${data.icon}</div>`;
+                }
+                html += `</div>`; cell.innerHTML = html; fragment.appendChild(cell);
+                
+                if(!gameState.properties[data.id] && data.type === 'property') {
+                    gameState.properties[data.id] = { ownerId: null };
+                }
+            });
+            board.appendChild(fragment);
+            refreshBoardVisuals();
+        }
+
+        function refreshBoardVisuals() {
+            const colors = ['#25a347', '#e11a28', '#2b8aed', '#eab308'];
+            Object.keys(gameState.properties).forEach(id => {
+                const propState = gameState.properties[id];
+                const colorBar = document.getElementById(`cb-${id}`);
+                if (!colorBar) return;
+                
+                if (propState.ownerId !== null) {
+                    colorBar.style.backgroundColor = colors[propState.ownerId - 1];
+                    colorBar.style.borderBottom = `3px solid #fff`;
+                } else {
+                    colorBar.style.backgroundColor = '#1a2228';
+                    colorBar.style.borderBottom = `1px solid var(--banner-border)`;
+                }
+            });
+        }
+
+        let setupPlayerCount = 0;
+        function addSetupPlayer(isBot = false, nameOverride = "") {
+            if(setupPlayerCount >= 4) return;
+            setupPlayerCount++; 
+            const defaultToken = tokensLib[(setupPlayerCount - 1) % tokensLib.length].id;
+            const div = document.createElement('div'); 
+            div.className = "flex gap-2 items-center justify-between p-2 border border-slate-200 w-full bg-white rounded shadow-sm";
+            div.innerHTML = `
+                <div class="flex flex-col flex-1 min-w-[80px]">
+                    <input type="text" id="pname-${setupPlayerCount}" value="${nameOverride || 'Player ' + setupPlayerCount}" ${isBot ? 'readonly' : ''} class="border border-slate-300 p-1.5 rounded font-bold text-xs outline-none focus:border-blue-500 focus:ring-1 transition-shadow ${isBot ? 'bg-slate-100 text-slate-500' : 'bg-white'}">
+                </div>
+                <div class="flex items-center gap-2 bg-slate-50 p-1 rounded border border-slate-200">
+                    <div id="preview-${setupPlayerCount}" class="w-6 h-6 drop-shadow-md">${tokenSVGs[defaultToken]}</div>
+                    <select id="ptoken-${setupPlayerCount}" ${isBot ? 'disabled' : ''} onchange="document.getElementById('preview-${setupPlayerCount}').innerHTML = tokenSVGs[this.value]" class="border-none bg-transparent font-bold text-slate-700 outline-none cursor-pointer text-[10px]">
+                        ${tokensLib.map(tkn => `<option value="${tkn.id}" ${tkn.id === defaultToken ? 'selected' : ''}>${tkn.name}</option>`).join('')}
+                    </select>
+                </div>`;
+            document.getElementById('setup-players').appendChild(div);
+        }
+
+        function updateSetupMode() {
+            const mode = document.getElementById('mode-select').value;
+            const container = document.getElementById('setup-players');
+            container.innerHTML = ''; setupPlayerCount = 0;
+            gameState.isBotMode = (mode === 'bot');
+
+            if (gameState.isBotMode) {
+                addSetupPlayer(false, "Human");
+                addSetupPlayer(true, "PC Bot");
+                document.getElementById('btn-add-p').style.display = 'none';
+            } else {
+                addSetupPlayer(false, "Player 1");
+                addSetupPlayer(false, "Player 2");
+                document.getElementById('btn-add-p').style.display = 'inline-flex';
+            }
+        }
+
+        function startGame() {
+            if(setupPlayerCount < 2) { showToast(t('toast_need_2')); return; }
+            for(let i=1; i<=setupPlayerCount; i++) {
+                const isBot = gameState.isBotMode && i === 2;
+                gameState.players.push({ 
+                    id: i, name: document.getElementById(`pname-${i}`).value || `Player ${i}`, 
+                    emoji: document.getElementById(`ptoken-${i}`).value, 
+                    balance: 20000, pos: 0, inJail: false, isBot: isBot
+                });
+            }
+            hideModal('modal-setup');
+            gameState.players.forEach(p => {
+                const tkn = document.createElement('div'); tkn.id = `token-${p.id}`; tkn.className = 'token'; tkn.innerHTML = tokenSVGs[p.emoji];
+                document.getElementById('board-area').appendChild(tkn);
+            });
+            updateTokens(); updateDashboard(); 
+            document.getElementById('dice-area').classList.add('dice-ready');
+            checkBotTurn();
+        }
+
+        function updateDashboard() {
+            document.querySelectorAll('.player-zone').forEach((z, i) => z.classList.toggle('active', i === gameState.currentPlayerIdx));
+            gameState.players.forEach((p, i) => {
+                let zone = document.getElementById(`pz-${i}`); 
+                if(!zone) {
+                    zone = document.createElement('div'); zone.id = `pz-${i}`; zone.className = 'player-zone';
+                    document.getElementById('player-zones').appendChild(zone);
+                }
+                const botTag = p.isBot ? `<span class="bot-indicator">BOT</span>` : '';
+                zone.innerHTML = `
+                    <div class="pz-info">
+                        <div class="pz-token">${tokenSVGs[p.emoji]}</div>
+                        <div style="display:flex; flex-direction: column; align-items: flex-start; line-height: 1.1; flex: 1; overflow: hidden;">
+                            <div class="pz-name">${p.name} ${botTag}</div>
+                            <div class="pz-balance">€ ${p.balance.toLocaleString('it-IT')}</div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function updateTokens() {
+            if (gameState.players.length === 0) return;
+            const parentRect = document.getElementById('board-area').getBoundingClientRect();
+            const posCounts = {};
+            gameState.players.forEach(p => { if (p.balance >= 0) posCounts[p.pos] = (posCounts[p.pos] || 0) + 1; });
+            const currentPosIndex = {};
+
+            gameState.players.forEach(p => {
+                if(p.balance < 0) return;
+                const cell = document.getElementById(`cell-${p.pos}`); if(!cell) return;
+                const rect = cell.getBoundingClientRect();
+                const centerX = (rect.left - parentRect.left) + rect.width/2;
+                const centerY = (rect.top - parentRect.top) + rect.height/2;
+
+                currentPosIndex[p.pos] = (currentPosIndex[p.pos] || 0);
+                const indexOnCell = currentPosIndex[p.pos];
+                currentPosIndex[p.pos]++;
+                
+                let offsetX = 0; let offsetY = 0;
+                if (posCounts[p.pos] > 1) {
+                    const radius = rect.width * 0.15; 
+                    const angle = (indexOnCell / posCounts[p.pos]) * Math.PI * 2 + (Math.PI/4);
+                    offsetX = Math.cos(angle) * radius; offsetY = Math.sin(angle) * radius;
+                }
+
+                const tEl = document.getElementById(`token-${p.id}`);
+                if (tEl) { tEl.style.left = `${centerX + offsetX}px`; tEl.style.top = `${centerY + offsetY}px`; }
+            });
+        }
+        window.addEventListener('resize', () => setTimeout(updateTokens, 100));
+
+        function handleDiceClick() {
+            const p = gameState.players[gameState.currentPlayerIdx];
+            if(p.isBot) return; 
+            rollDice();
+        }
+
+        function rollDice() {
+            const diceArea = document.getElementById('dice-area');
+            if(!diceArea.classList.contains('dice-ready') || gameState.isMoving) return;
+            diceArea.classList.remove('dice-ready'); 
+            
+            const p = gameState.players[gameState.currentPlayerIdx];
+            if(p.inJail) { p.inJail = false; endTurn(); return; }
+
+            document.getElementById('bounce1').style.display = 'flex'; document.getElementById('bounce2').style.display = 'flex';
+            document.getElementById('bounce3').style.display = 'none';
+
+            gameState.isMoving = true;
+            const val1 = Math.floor(Math.random() * 6) + 1; const val2 = Math.floor(Math.random() * 6) + 1;
+            
+            const d1El = document.getElementById('die1'); const d2El = document.getElementById('die2');
+            const b1 = document.getElementById('bounce1'); const b2 = document.getElementById('bounce2');
+            b1.classList.remove('anim-jump'); b2.classList.remove('anim-jump'); void b1.offsetWidth;
+            b1.classList.add('anim-jump'); b2.classList.add('anim-jump');
+
+            const spin = () => Math.floor(Math.random() * 2 + 2) * 360;
+            const diceRots = { 1: {x: 0, y: 0}, 2: {x: 0, y: 90}, 3: {x: -90, y: 0}, 4: {x: 90, y: 0}, 5: {x: 0, y: -90}, 6: {x: 180, y: 0} };
+            d1El.style.transform = `rotateX(${diceRots[val1].x + spin()}deg) rotateY(${diceRots[val1].y + spin()}deg)`;
+            d2El.style.transform = `rotateX(${diceRots[val2].x + spin()}deg) rotateY(${diceRots[val2].y + spin()}deg)`;
+
+            setTimeout(() => { stepMove(p, val1+val2); }, 1200);
+        }
+
+        function stepMove(player, stepsLeft) {
+            if(stepsLeft === 0) { setTimeout(() => handleLanded(player), 300); return; }
+            player.pos++; 
+            if(player.pos >= 24) { 
+                player.pos = 0; player.balance += 5000; 
+                showToast(t('toast_salary')); updateDashboard();
+            }
+            updateTokens(); setTimeout(() => stepMove(player, stepsLeft - 1), 250); 
+        }
+
+        function generateSimpleCardHTML(cell, isOwner = false) {
+            return `
+            <div class="bg-white border border-slate-200 rounded-md p-3 text-center w-full max-w-[240px] shadow-sm">
+                <div class="text-[9px] text-slate-400 font-bold uppercase mb-1">${t('card_market')}</div>
+                <div class="font-heading font-black text-sm text-slate-800 uppercase leading-tight mb-2">${cell.name.replace(/ vs /g, ' vs ')}</div>
+                <div class="inline-block border border-slate-300 rounded text-[10px] px-2 py-0.5 font-black bg-slate-50 mb-3 shadow-inner text-slate-700">Outcome: ${cell.defaultOutcome}</div>
+                <div class="bg-slate-50 rounded p-2 border border-slate-100 flex justify-between items-center mb-2">
+                    <span class="text-[10px] text-slate-500 font-bold uppercase">${t('card_odds')}</span>
+                    <div class="bf-odds-box scale-[0.8] origin-right !m-0"><div class="bf-odds-value">${cell.odds.toFixed(2)}</div></div>
+                </div>
+                <div class="text-[9px] text-slate-500 leading-snug">${isOwner ? t('card_banco_yes') : t('card_banco_no')}</div>
+                ${!isOwner ? `<div class="mt-3 text-center bg-[#2b8aed] text-white py-1.5 rounded font-black text-[11px]">${t('license_cost', cell.openCost.toLocaleString('it-IT'))}</div>` : ''}
+            </div>`;
+        }
+
+        function handleLanded(player) {
+            const bd = getBoardData(); const cell = bd[player.pos]; let html = '';
+            const botLabel = player.isBot ? "🤖 BOT -> " : "";
+            const botHighlight = player.isBot ? "ring-4 ring-offset-2 ring-blue-400" : "";
+            
+            if (cell.type === 'property') {
+                const propState = gameState.properties[cell.id];
+                if (!propState.ownerId) {
+                    html += `<div class="p-3 border-b border-slate-200 bg-slate-50 flex-shrink-0">
+                                <h2 class="text-base font-black text-[#2b8aed] font-heading uppercase">${t('free_market')}</h2>
+                                <p class="text-[10px] text-slate-500 font-medium">${t('acquire_license')}</p>
+                             </div>`;
+                    html += `<div class="modal-content-scroll bg-slate-100 flex justify-center py-4">${generateSimpleCardHTML(cell, false)}</div>`;
+                    html += `<div class="modal-footer-sticky">
+                                <button class="btn btn-inline" id="btn-pass-action" onclick="endTurn()">${t('btn_pass')}</button>
+                                <button class="btn btn-bf-blue btn-inline" id="btn-buy-action" onclick="buyProperty(${cell.id})">${t('btn_open_market')}</button>
+                             </div>`;
+                    showActionModal(html);
+                    if(player.isBot) setTimeout(() => botDecisionBuy(player, cell), 600);
+                } else if (propState.ownerId !== player.id) {
+                    const owner = gameState.players.find(p => p.id === propState.ownerId); 
+                    openBettingUI(cell.id, owner);
+                } else { 
+                    html += `<div class="modal-content-scroll bg-slate-100 flex flex-col items-center py-4">
+                                ${generateSimpleCardHTML(cell, true)}
+                                <p class="mt-3 text-[#25a347] font-bold text-[10px] bg-[#eaf6ec] p-1.5 rounded border border-[#bbf7d0] w-full max-w-[240px] text-center">${t('your_market')}</p>
+                             </div>
+                             <div class="modal-footer-sticky"><button class="btn ${botHighlight}" onclick="endTurn()">${botLabel}${t('btn_end_turn')}</button></div>`; 
+                    showActionModal(html);
+                }
+            } else if (cell.type === 'chance') {
+                handleCardDeck(player, cell.deck);
+            } else if (cell.type === 'tax') {
+                html += `<div class="modal-content-scroll flex flex-col items-center text-center py-4">
+                            <h2 class="text-lg font-black mb-2 text-[#e11a28] font-heading uppercase tracking-wide">${t('tax_title')}</h2>
+                            <div class="text-4xl mb-3">${cell.icon}</div>
+                            <p class="text-slate-600 mb-4 text-xs font-medium bg-slate-50 p-2 rounded border border-slate-200">${t('tax_desc')}</p>
+                         </div>
+                         <div class="modal-footer-sticky"><button class="btn btn-bf-pink w-full ${botHighlight}" onclick="payTax(${cell.cost})">${botLabel}${t('btn_pay', cell.cost.toLocaleString('it-IT'))}</button></div>`;
+                showActionModal(html);
+            } else if (cell.id === 8 || cell.id === 20) {
+                html += `<div class="modal-content-scroll flex flex-col items-center text-center py-4">
+                            <h2 class="text-lg font-black mb-2 text-[#e11a28] font-heading uppercase tracking-wide">${t('kyc_title')}</h2>
+                            <div class="text-4xl mb-3">${cell.icon}</div>
+                            <p class="text-slate-600 mb-4 text-xs font-medium bg-slate-50 p-2 rounded border border-slate-200">${t('kyc_desc')}</p>
+                         </div>
+                         <div class="modal-footer-sticky"><button class="btn btn-bf-pink w-full ${botHighlight}" onclick="goToJail()">${botLabel}${t('btn_kyc')}</button></div>`;
+                showActionModal(html);
+            } else {
+                html += `<div class="modal-content-scroll flex flex-col items-center text-center py-4">
+                            <h2 class="text-lg font-black mb-2 font-heading uppercase text-slate-800 tracking-wide">${cell.name}</h2>
+                            <div class="text-4xl mb-3">${cell.icon}</div>
+                            <p class="text-slate-500 mb-4 text-xs font-medium bg-slate-50 p-2 rounded border border-slate-200">${t('neutral_desc')}</p>
+                         </div>
+                         <div class="modal-footer-sticky"><button class="btn w-full ${botHighlight}" onclick="endTurn()">${botLabel}${t('btn_continue_neutral')}</button></div>`;
+                showActionModal(html);
+            }
+        }
+
+        let activeBet = null;
+
+        function openBettingUI(cellId, owner) {
+            const cell = getBoardData().find(c => c.id === cellId);
+            const p = gameState.players[gameState.currentPlayerIdx];
+            activeBet = { cellId: cellId, odds: cell.odds, ownerId: owner.id, stake: 0, targetOutcome: cell.defaultOutcome, liability: 0 };
+            
+            document.getElementById('bet-match-name').innerText = cell.name.replace(/<br>/g, ' ');
+            document.getElementById('bet-outcome-req').innerText = cell.defaultOutcome;
+            document.getElementById('bet-owner-name').innerText = owner.name;
+            document.getElementById('bet-odds-display').innerText = cell.odds.toFixed(2);
+            
+            const btnConfirm = document.getElementById('btn-confirm-bet');
+            const btnPass = document.getElementById('btn-pass-bet');
+            
+            btnConfirm.className = "btn btn-bf-blue";
+            btnConfirm.style.opacity = '1'; btnConfirm.style.pointerEvents = 'auto';
+            btnConfirm.innerHTML = t('btn_bet_resolve');
+            
+            btnPass.className = "btn";
+            btnPass.style.opacity = '1'; btnPass.style.pointerEvents = 'auto';
+            btnPass.innerHTML = t('btn_pass');
+
+            selectStake(0);
+            showModal('modal-bet');
+            
+            if(p.isBot) setTimeout(() => botDecisionBet(p, owner), 800);
+        }
+
+        function selectStake(amount) {
+            const p = gameState.players[gameState.currentPlayerIdx];
+            const owner = gameState.players.find(x => x.id === activeBet.ownerId);
+            const btnConfirm = document.getElementById('btn-confirm-bet');
+            const warnBox = document.getElementById('liability-warning');
+            
+            if (amount === 0) {
+                document.getElementById('preview-stake').innerText = "0"; document.getElementById('preview-win').innerText = "0"; document.getElementById('preview-liability').innerText = "0";
+                btnConfirm.disabled = true; warnBox.classList.add('hidden'); return;
+            }
+
+            let requestedStake = amount;
+            if (requestedStake > p.balance) requestedStake = p.balance; 
+            
+            let requestedLiability = requestedStake * (activeBet.odds - 1);
+            let isCappedByOwner = false;
+
+            if (requestedLiability > owner.balance) {
+                requestedLiability = owner.balance;
+                requestedStake = requestedLiability / (activeBet.odds - 1);
+                isCappedByOwner = true;
+            }
+
+            requestedStake = Math.floor(requestedStake);
+            let finalLiability = requestedStake * (activeBet.odds - 1);
+
+            activeBet.stake = requestedStake; activeBet.liability = finalLiability;
+            
+            document.getElementById('preview-stake').innerText = requestedStake.toLocaleString('it-IT');
+            document.getElementById('preview-win').innerText = finalLiability.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            document.getElementById('preview-liability').innerText = finalLiability.toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+
+            if (isCappedByOwner) { 
+                warnBox.classList.remove('hidden'); 
+                warnBox.innerText = t('warn_liq', owner.balance.toLocaleString(), requestedStake.toLocaleString(), owner.name); 
+            } else if (requestedStake < amount) { 
+                warnBox.classList.remove('hidden'); 
+                warnBox.innerText = t('warn_funds', requestedStake.toLocaleString()); 
+            } else { 
+                warnBox.classList.add('hidden'); 
+            }
+
+            btnConfirm.disabled = requestedStake <= 0;
+            
+            document.querySelectorAll('.stake-btn').forEach(b => {
+                b.classList.remove('active');
+                if (parseInt(b.innerText.replace(/\D/g, '')) === amount) b.classList.add('active');
+            });
+        }
+
+        function skipBet() { hideModal('modal-bet'); activeBet = null; showToast(t('toast_pass')); endTurn(); }
+
+        const resultDiceRots = { '1_a': {x: 0, y: 0}, 'X_a': {x: 0, y: 90}, '2_a': {x: -90, y: 0}, '1_b': {x: 90, y: 0}, 'X_b': {x: 0, y: -90}, '2_b': {x: 180, y: 0} };
+
+        function confirmAndRollMatch() {
+            if(!activeBet || activeBet.stake <= 0) return;
+            hideModal('modal-bet');
+            
+            const p = gameState.players[gameState.currentPlayerIdx]; 
+            const owner = gameState.players.find(x => x.id === activeBet.ownerId);
+            p.balance -= activeBet.stake; 
+            owner.balance -= activeBet.liability; 
+            updateDashboard();
+            
+            showToast(t('toast_matched'));
+            
+            document.getElementById('bounce1').style.display = 'none'; document.getElementById('bounce2').style.display = 'none';
+            const b3 = document.getElementById('bounce3'); const dResEl = document.getElementById('dieResult');
+            b3.style.display = 'flex'; b3.classList.remove('anim-jump'); void b3.offsetWidth; b3.classList.add('anim-jump');
+
+            const resKeys = Object.keys(resultDiceRots);
+            const randomResKey = resKeys[Math.floor(Math.random() * resKeys.length)];
+            gameState.lastResult = randomResKey.split('_')[0]; 
+
+            const spin = () => Math.floor(Math.random() * 2 + 2) * 360;
+            dResEl.style.transform = `rotateX(${resultDiceRots[randomResKey].x + spin()}deg) rotateY(${resultDiceRots[randomResKey].y + spin()}deg)`;
+            
+            setTimeout(() => { showTutorAndResolve(); }, 1500);
+        }
+
+        function showTutorAndResolve() {
+            const p = gameState.players[gameState.currentPlayerIdx]; const owner = gameState.players.find(x => x.id === activeBet.ownerId);
+            const actualResult = gameState.lastResult; const isMatch = actualResult === activeBet.targetOutcome;
+            let titleText = ""; let bgHead = ""; let tutorText = "";
+
+            if (isMatch) {
+                titleText = t('tutor_win_title'); bgHead = "bg-[#25a347]";
+                tutorText = t('tutor_win_text', actualResult, activeBet.stake.toLocaleString('it-IT'), activeBet.liability.toLocaleString('it-IT', {maximumFractionDigits:0}), owner.name, activeBet.liability.toLocaleString('it-IT', {maximumFractionDigits:0}));
+                p.balance += (activeBet.stake + activeBet.liability); 
+            } else {
+                titleText = t('tutor_lose_title'); bgHead = "bg-[#e11a28]";
+                tutorText = t('tutor_lose_text', actualResult, activeBet.stake.toLocaleString('it-IT'), owner.name, activeBet.liability.toLocaleString('it-IT', {maximumFractionDigits:0}), activeBet.stake.toLocaleString('it-IT'));
+                owner.balance += (activeBet.liability + activeBet.stake);
+            }
+
+            const botLabel = p.isBot ? "🤖 BOT -> " : "";
+            const botHighlight = p.isBot ? "ring-4 ring-offset-2 ring-blue-300" : "";
+
+            let html = `
+                <div class="${bgHead} text-white font-black text-[13px] py-3 px-4 flex-shrink-0 shadow-sm uppercase tracking-widest flex items-center justify-between">
+                    <span>${titleText}</span>
+                </div>
+                <div class="modal-content-scroll bg-slate-50">
+                    <div class="bg-white border border-slate-200 border-l-4 border-l-[#2b8aed] rounded p-4 shadow-sm text-left relative">
+                        <div class="font-heading font-black text-[#2b8aed] text-[9px] mb-2 uppercase tracking-wider border-b border-slate-100 pb-1">${t('tutor_header')}</div>
+                        <p class="text-xs md:text-[13px] leading-relaxed text-slate-700">${tutorText}</p>
+                    </div>
+                </div>
+                <div class="modal-footer-sticky bg-slate-50">
+                    <button class="btn btn-bf-blue w-full py-2.5 ${botHighlight}" onclick="closeTutorAndEndTurn()">${botLabel}${t('btn_continue')}</button>
+                </div>`;
+            showActionModal(html);
+        }
+
+        function checkBotTurn() {
+            const p = gameState.players[gameState.currentPlayerIdx];
+            if(p.isBot) {
+                setTimeout(rollDice, 1500);
+            }
+        }
+
+        function botDecisionBuy(player, cell) {
+            const btnBuy = document.getElementById('btn-buy-action');
+            const btnPass = document.getElementById('btn-pass-action');
+            if(player.balance > cell.openCost + 3000) {
+                btnBuy.innerHTML = "🤖 BOT -> " + t('btn_open_market');
+                btnBuy.classList.add('ring-4', 'ring-offset-2', 'ring-blue-400');
+                btnPass.style.opacity = '0.3'; btnPass.style.pointerEvents = 'none';
+            } else {
+                btnPass.innerHTML = "🤖 BOT -> " + t('btn_pass');
+                btnPass.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
+                btnBuy.style.opacity = '0.3'; btnBuy.style.pointerEvents = 'none';
+            }
+        }
+
+        function botDecisionBet(player, owner) {
+            const stakes = [1000, 500, 100]; 
+            let chosen = 0;
+            for(let s of stakes) {
+                let liab = s * (activeBet.odds - 1);
+                if(s <= player.balance && liab <= owner.balance) {
+                    chosen = s; break;
+                }
+            }
+            const btnConfirm = document.getElementById('btn-confirm-bet');
+            const btnPass = document.getElementById('btn-pass-bet');
+
+            if(chosen > 0) {
+                selectStake(chosen);
+                btnConfirm.innerHTML = "🤖 BOT -> " + t('btn_bet_resolve');
+                btnConfirm.classList.add('ring-4', 'ring-offset-2', 'ring-blue-400');
+                btnPass.style.opacity = '0.3'; btnPass.style.pointerEvents = 'none';
+            } else {
+                selectStake(0);
+                btnPass.innerHTML = "🤖 BOT -> " + t('btn_pass');
+                btnPass.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
+                btnConfirm.style.opacity = '0.3'; btnConfirm.style.pointerEvents = 'none';
+            }
+        }
+
+        function handleCardDeck(player, deckType) {
+            const isNews = deckType === 'news'; const deckName = t(isNews ? 'news_live' : 'market_mover').replace('<br>', ' ');
+            const icon = isNews ? "🖥️" : "📈"; const headerColor = isNews ? "text-[#0ea5e9]" : "text-[#f43f5e]";
+            const ev = { m: "Odds shifted in your favor! Cash out.", v: 1000 }; 
+            const botLabel = player.isBot ? "🤖 BOT -> " : "";
+            const botHighlight = player.isBot ? "ring-4 ring-offset-2 ring-blue-400" : "";
+            let html = `
+                <div class="modal-content-scroll flex flex-col items-center text-center py-4">
+                    <h2 class="text-lg font-black mb-2 ${headerColor} font-heading uppercase tracking-wide">${deckName}</h2>
+                    <div class="text-4xl mb-3">${icon}</div>
+                    <p class="text-slate-700 font-medium text-[11px] mb-4 bg-slate-50 p-2.5 rounded border border-slate-200 w-full italic">"${ev.m}"</p>
+                    <div class="text-xl font-black ${ev.v > 0 ? 'text-[#25a347]' : 'text-[#e11a28]'} mb-1">${ev.v > 0 ? '+' : ''}€ ${ev.v.toLocaleString('it-IT')}</div>
+                </div>
+                <div class="modal-footer-sticky"><button class="btn w-full btn-bf-blue ${botHighlight}" onclick="applyChance(${ev.v})">${botLabel}OK</button></div>`;
+            showActionModal(html);
+        }
+
+        function applyChance(val) {
+            const p = gameState.players[gameState.currentPlayerIdx];
+            if(val > 0) { p.balance += val; } else { if(p.balance >= Math.abs(val)) p.balance += val; else { bankruptPlayer(p); return; } }
+            updateDashboard(); hideModal('modal-action'); endTurn();
+        }
+
+        function buyProperty(cellId) { 
+            const p = gameState.players[gameState.currentPlayerIdx]; const cell = getBoardData().find(c => c.id === cellId); 
+            if(p.balance >= cell.openCost) { p.balance -= cell.openCost; gameState.properties[cellId].ownerId = p.id; updateDashboard(); refreshBoardVisuals(); showToast(t('toast_license')); hideModal('modal-action'); endTurn(); } 
+            else showToast(t('toast_no_funds'));
+        }
+
+        function payTax(amount) { const p = gameState.players[gameState.currentPlayerIdx]; if(p.balance >= amount) { p.balance -= amount; updateDashboard(); hideModal('modal-action'); endTurn(); } else bankruptPlayer(p); }
+        function goToJail() { hideModal('modal-action'); const p = gameState.players[gameState.currentPlayerIdx]; p.pos = 8; p.inJail = true; updateTokens(); endTurn(); }
+        
+        function bankruptPlayer(p) { 
+            showToast(t('toast_bankrupt', p.name)); p.balance = -1; 
+            Object.keys(gameState.properties).forEach(k => { if(gameState.properties[k].ownerId === p.id) { gameState.properties[k].ownerId = null; } }); 
+            refreshBoardVisuals(); 
+            document.getElementById(`token-${p.id}`).style.display = 'none'; 
+            document.getElementById(`pz-${gameState.currentPlayerIdx}`).classList.add('bankrupt'); 
+            hideModal('modal-action'); endTurn(); 
+        }
+        
+        function showModal(id) { 
+            const m = document.getElementById(id); m.style.display = 'flex'; 
+            void m.offsetWidth; m.classList.add('show');
+        }
+        function hideModal(id) { 
+            const m = document.getElementById(id); m.classList.remove('show');
+            setTimeout(() => { m.style.display = 'none'; }, 200);
+        }
+        function showActionModal(html) { document.getElementById('action-content').innerHTML = html; showModal('modal-action'); }
+        function closeTutorAndEndTurn() { activeBet = null; updateDashboard(); hideModal('modal-action'); endTurn(); }
+        
+        function showInstructions() { document.getElementById('rules-content').innerHTML = t('rules_html'); showModal('modal-instructions'); }
+        function hideInstructions() { hideModal('modal-instructions'); }
+        function hideIntro() { hideModal('intro-screen'); setTimeout(() => { showModal('modal-setup'); updateSetupMode(); initBoard(); }, 250); }
+        
+        function showToast(msg) { 
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div'); toast.className = 'toast'; 
+            toast.innerHTML = `<svg class="w-4 h-4 flex-shrink-0 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg> <span style="line-height:1.2;">${msg}</span>`; 
+            container.appendChild(toast); setTimeout(() => { if (toast.parentNode) toast.remove(); }, 3500); 
+        }
+
+        function endTurn() {
+            hideModal('modal-action'); gameState.isMoving = false;
+            const activePlayers = gameState.players.filter(p => p.balance >= 0);
+            if(activePlayers.length === 1 && gameState.players.length > 1) { showToast(t('toast_winner', activePlayers[0].name.toUpperCase())); updateDashboard(); return; }
+            let nextIdx = (gameState.currentPlayerIdx + 1) % gameState.players.length; 
+            while(gameState.players[nextIdx].balance < 0) { nextIdx = (nextIdx + 1) % gameState.players.length; }
+            gameState.currentPlayerIdx = nextIdx; updateDashboard(); 
+            setTimeout(() => {
+                document.getElementById('dice-area').classList.add('dice-ready');
+                document.getElementById('bounce1').style.display = 'flex'; document.getElementById('bounce2').style.display = 'flex'; document.getElementById('bounce3').style.display = 'none';
+                checkBotTurn();
+            }, 600);
+        }
+
+        window.onload = () => { setLang(detectLang()); };
+    </script>
+</body>
+</html>
