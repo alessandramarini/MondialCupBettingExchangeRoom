@@ -142,16 +142,16 @@
         }
 
         .property-name {
-            font-weight: 800; font-size: clamp(6px, 11cqmin, 13px); line-height: 1.05; 
+            font-weight: 800; font-size: clamp(6px, 11cqmin, 12px); line-height: 1.05; 
             text-transform: uppercase; margin: auto 0; 
             display: flex; align-items: center; justify-content: center; flex-grow: 1;
-            padding: 2% 4%; color: #f8fafc; text-align: center; width: 100%; box-sizing: border-box; 
+            padding: 2% 2%; color: #f8fafc; text-align: center; width: 100%; box-sizing: border-box; 
             letter-spacing: -0.2px; overflow: hidden; text-overflow: ellipsis; 
             display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; word-break: break-word; hyphens: auto;
         }
 
         .property-price { 
-            font-size: clamp(7px, 12cqmin, 15px); font-family: 'Teko', sans-serif; font-weight: 600; 
+            font-size: clamp(7px, 12cqmin, 14px); font-family: 'Teko', sans-serif; font-weight: 600; 
             margin-bottom: 4%; flex-shrink: 0; color: #e2e8f0; 
             background: rgba(255, 255, 255, 0.1); padding: 0 8%; border-radius: 3px; 
             border: 1px solid rgba(255, 255, 255, 0.2); letter-spacing: 0.5px; line-height: 1.2;
@@ -190,7 +190,7 @@
             box-shadow: -2px 2px 0px rgba(0,0,0,0.3), -4px 4px 0px rgba(0,0,0,0.2), 0 6px 12px rgba(0,0,0,0.5); 
             border: 1px solid rgba(255,255,255,0.2); text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
             font-family: 'Montserrat'; font-weight: 900; font-size: clamp(7px, 2vmin, 14px);
-            text-align: center; line-height: 1.1; letter-spacing: -0.5px;
+            text-align: center; line-height: 1.1; letter-spacing: -0.5px; padding: 2px;
         }
         .deck-stack.bg-news { background: linear-gradient(135deg, #0ea5e9, #0369a1); color: #fff; border-color: #38bdf8;}
         .deck-stack.bg-movers { background: linear-gradient(135deg, #f43f5e, #be123c); color: #fff; border-color: #fb7185;}
@@ -263,14 +263,13 @@
 
         .modal-box { 
             background: #ffffff; border-radius: 12px; width: 100%; max-width: 400px; 
-            max-height: 85dvh; display: flex; flex-direction: column;
+            max-height: 90dvh; display: flex; flex-direction: column;
             box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); overflow: hidden; 
         }
         .modal-box.large { max-width: 580px; }
 
         .modal-content-scroll { 
-            padding: clamp(14px, 3vw, 20px); overflow-y: auto; flex-grow: 1; 
-            max-height: 55vh; 
+            padding: clamp(14px, 3vw, 20px); overflow-y: auto; flex-grow: 1; flex-shrink: 1;
             scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; 
         }
         
@@ -316,10 +315,10 @@
 
     <div id="app-wrapper">
         <div id="lang-bar">
-            <span class="lang-btn active" onclick="setLang('en')" id="btn-en"><img src="https://flagcdn.com/w20/gb.png" class="lang-flag" alt="EN"> EN</span>
-            <span class="lang-btn" onclick="setLang('es')" id="btn-es"><img src="https://flagcdn.com/w20/es.png" class="lang-flag" alt="ES"> ES</span>
-            <span class="lang-btn" onclick="setLang('pt')" id="btn-pt"><img src="https://flagcdn.com/w20/pt.png" class="lang-flag" alt="PT"> PT</span>
-            <span class="lang-btn" onclick="setLang('it')" id="btn-it"><img src="https://flagcdn.com/w20/it.png" class="lang-flag" alt="IT"> IT</span>
+            <span class="lang-btn active" onclick="setLang('en')" id="btn-en"><img src="https://flagcdn.com/w20/gb.png" class="lang-flag" alt="EN" onerror="this.style.display='none';"> EN</span>
+            <span class="lang-btn" onclick="setLang('es')" id="btn-es"><img src="https://flagcdn.com/w20/es.png" class="lang-flag" alt="ES" onerror="this.style.display='none';"> ES</span>
+            <span class="lang-btn" onclick="setLang('pt')" id="btn-pt"><img src="https://flagcdn.com/w20/pt.png" class="lang-flag" alt="PT" onerror="this.style.display='none';"> PT</span>
+            <span class="lang-btn" onclick="setLang('it')" id="btn-it"><img src="https://flagcdn.com/w20/it.png" class="lang-flag" alt="IT" onerror="this.style.display='none';"> IT</span>
         </div>
 
         <div id="toast-container"></div>
@@ -334,10 +333,10 @@
                         <div class="pitch-box-top"></div>
                         <div class="pitch-box-bottom"></div>
                         
-                        <img src="logo-tondo.jpeg" alt="Logo" class="center-logo" onerror="this.style.display='none';">
+                        <img src="logo-tondo.jpeg" alt="Logo" class="center-logo" onerror="this.outerHTML='<span style=\'font-size: clamp(3rem, 10vmin, 6rem); position: absolute; opacity: 0.2; top: 50%; left: 50%; transform: translate(-50%, -50%);\'>⚽</span>'">
                         
-                        <div class="deck-slot news"><div class="deck-stack bg-news" data-i18n="news_live">VAR<br>REVIEW</div></div>
-                        <div class="deck-slot movers"><div class="deck-stack bg-movers" data-i18n="market_mover">LIVE<br>ACTION</div></div>
+                        <div class="deck-slot news"><div class="deck-stack bg-news" id="board-news-text">VAR<br>REVIEW</div></div>
+                        <div class="deck-slot movers"><div class="deck-stack bg-movers" id="board-movers-text">LIVE<br>ACTION</div></div>
 
                         <div class="dice-area" id="dice-area" onclick="handleDiceClick()">
                             <div class="die-wrapper" id="bounce1">
@@ -428,7 +427,7 @@
                 </div>
 
                 <div class="modal-footer-sticky">
-                    <button class="btn btn-inline" onclick="addSetupPlayer()" id="btn-add-p" style="display:none;" data-i18n="btn_add_player">+ PLAYER</button>
+                    <button class="btn btn-inline" onclick="addSetupPlayer(false)" id="btn-add-p" style="display:none;" data-i18n="btn_add_player">+ PLAYER</button>
                     <button class="btn btn-bf-blue btn-inline" onclick="startGame()" data-i18n="btn_open_markets">KICK OFF</button>
                 </div>
             </div>
@@ -541,7 +540,7 @@
             </svg>`,
             'shield': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
                 <path d="M 20 15 L 80 15 L 80 40 C 80 70 50 90 50 90 C 50 90 20 70 20 40 Z" fill="url(#shieldGrad)" stroke="#1e3a8a" stroke-width="3"/>
-                <path d="M 25 20 L 75 20 L 75 40 C 75 65 50 82 50 82 C 50 82 25 65 25 40 Z" fill="none" stroke="#bfdbfe" stroke-width="2"/>
+                <path d="M 25 20 L 75 20 L 75 40 C 75 65 50 82 50 82 C 50 82 25 40 25 40 Z" fill="none" stroke="#bfdbfe" stroke-width="2"/>
                 <circle cx="50" cy="45" r="15" fill="#fcd34d"/>
             </svg>`,
             'shirt': `<svg viewBox="0 0 100 100" class="token-svg">${tknDefs}
@@ -562,29 +561,29 @@
                 select_stake: "Select Stake:", your_stake: "Your Stake (Back):", pot_profit: "Potential Profit:", bank_liability: "Bank Liability:",
                 btn_pass: "PASS", btn_bet_resolve: "PLACE BET", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
                 
+                board_kickoff: "KICK OFF", board_var: "VAR REVIEW", board_halftime: "HALF TIME",
+                player_human: "Human", player_bot: "PC Bot", player_n: "Player {0}",
+                card_outcome: "Outcome: {0}", btn_ok: "OK", bot_prefix: "🤖 BOT ➔ ", market_vs: "vs",
+                
                 rules_html: `
                     <div class="space-y-4 text-left">
                         <p class="font-medium text-slate-800">Welcome to the <b>Betting Exchange Simulator</b>. Learn how real markets work without financial risk!</p>
-                        
                         <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
                             <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Game Modes</h3>
-                            <p class="text-xs mb-2"><b>1 Player vs PC:</b> The Bot calculates the best math-based moves automatically. <u>You act as the dealer for the Bot</u>, so you must click its highlighted choices to confirm them and proceed.</p>
+                            <p class="text-xs mb-2"><b>1 Player vs PC:</b> The Bot calculates the best moves automatically. <u>You act as the dealer</u>, so you must click its choices to proceed.</p>
                             <p class="text-xs"><b>Multiplayer:</b> Pass the device to your friends when it's their turn.</p>
                         </div>
-
                         <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Buy a Match = Become the Bank (Lay)</h3>
                             <p class="text-xs">Land on a free match to buy the License. You act as the <b>Bank (Lay)</b> offering fixed odds. When opponents land on it, they bet against you. The money you risk to pay them is called <span class="highlight-lay">Liability</span>.</p>
                         </div>
-
                         <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Land on a Match = Place a Bet (Back)</h3>
                             <p class="text-xs">If you land on an opponent's match, you place a <span class="highlight-back">Back bet</span>. You choose the Stake. If your bet wins, you get the Profit. If you lose, the Bank keeps your Stake.</p>
                         </div>
-
                         <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 The Liquidity Rule</h3>
-                            <p class="text-xs">If the Bank (owner) doesn't have enough money to cover the Liability of your bet, your maximum Stake is <b>automatically capped</b> to match what they can afford to pay!</p>
+                            <p class="text-xs">If the Bank doesn't have enough money to cover the Liability, your maximum Stake is <b>automatically capped</b>!</p>
                         </div>
                     </div>
                 `,
@@ -621,29 +620,29 @@
                 select_stake: "Seleziona Stake:", your_stake: "Tuo Stake (Punta):", pot_profit: "Profitto Potenziale:", bank_liability: "Responsabilità Banco:",
                 btn_pass: "PASSA", btn_bet_resolve: "SCOMMETTI", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
                 
+                board_kickoff: "INIZIO", board_var: "REVISIONE VAR", board_halftime: "INTERVALLO",
+                player_human: "Umano", player_bot: "PC Bot", player_n: "Giocatore {0}",
+                card_outcome: "Esito: {0}", btn_ok: "OK", bot_prefix: "🤖 BOT ➔ ", market_vs: "vs",
+                
                 rules_html: `
                     <div class="space-y-4 text-left">
                         <p class="font-medium text-slate-800">Benvenuto nel <b>Simulatore Betting Exchange</b>. Impara le dinamiche reali senza rischi finanziari!</p>
-                        
                         <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
                             <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modalità di Gioco</h3>
-                            <p class="text-xs mb-2"><b>1 Giocatore vs PC:</b> Il Bot decide matematicamente le mosse migliori in automatico. <u>Tu fai da 'Dealer' per il Bot</u>: dovrai cliccare sui pulsanti da lui evidenziati per confermare le azioni e proseguire.</p>
+                            <p class="text-xs mb-2"><b>1 Giocatore vs PC:</b> Il Bot decide matematicamente le mosse migliori. <u>Tu fai da 'Dealer' per il Bot</u>: clicca sui pulsanti per confermare le sue azioni.</p>
                             <p class="text-xs"><b>Multiplayer:</b> Passatevi il dispositivo a ogni turno!</p>
                         </div>
-
                         <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-[#e11a28] uppercase text-[11px] mb-1">🏦 Comprare un Match = Fare il Banco (Lay)</h3>
-                            <p class="text-xs">Cadi su un match libero per comprare la Licenza. Agisci come <b>Banco (Lay)</b> offrendo quote fisse. Gli avversari scommetteranno contro di te. I soldi che rischi per pagarli sono la <span class="highlight-lay">Responsabilità</span>.</p>
+                            <p class="text-xs">Cadi su un match libero per comprare la Licenza. Agisci come <b>Banco (Lay)</b> offrendo quote fisse. I soldi che rischi per pagare chi vince sono la <span class="highlight-lay">Responsabilità</span>.</p>
                         </div>
-
                         <div class="bg-[#ebf3fb] border-l-4 border-[#2b8aed] p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-[#2b8aed] uppercase text-[11px] mb-1">🎯 Caderci Sopra = Puntare (Back)</h3>
                             <p class="text-xs">Se cadi sul match di un avversario, piazzi una <span class="highlight-back">Puntata (Back)</span>. Scegli lo Stake. Se vinci, incassi il Profitto. Se perdi, il Banco trattiene il tuo Stake.</p>
                         </div>
-
                         <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded-r-md shadow-sm">
                             <h3 class="font-black text-amber-700 uppercase text-[11px] mb-1">💧 La Regola della Liquidità</h3>
-                            <p class="text-xs">Se il Banco non ha abbastanza fondi per coprire la Responsabilità della tua vincita, il tuo Stake massimo viene <b>limitato automaticamente</b> in base a ciò che il Banco può pagare!</p>
+                            <p class="text-xs">Se il Banco non ha fondi per coprire la Responsabilità, il tuo Stake massimo viene <b>limitato automaticamente</b>!</p>
                         </div>
                     </div>
                 `,
@@ -680,11 +679,15 @@
                 select_stake: "Elige Stake:", your_stake: "Tu Stake (Back):", pot_profit: "Beneficio Potencial:", bank_liability: "Riesgo Banco (Lay):",
                 btn_pass: "PASAR", btn_bet_resolve: "APOSTAR", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
                 
+                board_kickoff: "INICIO", board_var: "REVISIÓN VAR", board_halftime: "DESCANSO",
+                player_human: "Humano", player_bot: "PC Bot", player_n: "Jugador {0}",
+                card_outcome: "Resultado: {0}", btn_ok: "OK", bot_prefix: "🤖 BOT ➔ ", market_vs: "vs",
+                
                 rules_html: `
                     <div class="space-y-4 text-left">
                         <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
                             <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modos de Juego</h3>
-                            <p class="text-xs mb-2"><b>1 Jugador vs PC:</b> El Bot decide basado en matemáticas automáticamente. <u>Tú actúas como repartidor (dealer)</u>, por lo que debes hacer clic para confirmar las acciones del Bot.</p>
+                            <p class="text-xs mb-2"><b>1 Jugador vs PC:</b> El Bot decide basado en matemáticas automáticamente. <u>Tú actúas como repartidor (dealer)</u>.</p>
                             <p class="text-xs"><b>Multijugador:</b> ¡Pasa el dispositivo a tus amigos!</p>
                         </div>
                         <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
@@ -734,11 +737,15 @@
                 select_stake: "Escolha Stake:", your_stake: "Seu Stake (Back):", pot_profit: "Lucro Potencial:", bank_liability: "Responsabilidade:",
                 btn_pass: "PASSAR", btn_bet_resolve: "APOSTAR", news_live: "VAR<br>REVIEW", market_mover: "LIVE<br>ACTION",
                 
+                board_kickoff: "INÍCIO", board_var: "REVISÃO VAR", board_halftime: "INTERVALO",
+                player_human: "Humano", player_bot: "PC Bot", player_n: "Jogador {0}",
+                card_outcome: "Resultado: {0}", btn_ok: "OK", bot_prefix: "🤖 BOT ➔ ", market_vs: "vs",
+                
                 rules_html: `
                     <div class="space-y-4 text-left">
                         <div class="bg-slate-100 p-3 rounded shadow-sm border border-slate-300">
                             <h3 class="font-black text-slate-800 uppercase text-[11px] mb-1">🎮 Modos de Jogo</h3>
-                            <p class="text-xs mb-2"><b>1 Jogador vs PC:</b> O Bot decide matematicamente. <u>Você atua como dealer</u> e deve clicar para confirmar as ações do Bot e prosseguir.</p>
+                            <p class="text-xs mb-2"><b>1 Jogador vs PC:</b> O Bot decide matematicamente. <u>Você atua como dealer</u>.</p>
                             <p class="text-xs"><b>Multijogador:</b> Passe o dispositivo para seus amigos!</p>
                         </div>
                         <div class="bg-[#fef0f2] border-l-4 border-[#e11a28] p-3 rounded-r-md shadow-sm">
@@ -795,7 +802,12 @@
                 const key = el.getAttribute('data-i18n');
                 if(i18n[currentLang][key]) el.innerHTML = i18n[currentLang][key];
             });
+            document.getElementById('board-news-text').innerHTML = t('news_live');
+            document.getElementById('board-movers-text').innerHTML = t('market_mover');
             initBoard();
+            if (document.getElementById('modal-setup').classList.contains('show')) {
+                updateSetupMode(); // refresh setup inputs
+            }
         }
 
         function t(key, ...args) {
@@ -807,11 +819,11 @@
         // 24 Cells mapped to a 5x9 Grid (Portrait Optimized)
         function getBoardData() {
             return [
-                { id: 0, type: 'corner', name: "KICK OFF", icon: "⚽" },
+                { id: 0, type: 'corner', name: t('board_kickoff'), icon: "⚽" },
                 { id: 1, type: 'property', name: "USA vs MEX", f1:"us", f2:"mx", openCost: 2000, odds: 2.20, defaultOutcome: '1' },
                 { id: 2, type: 'property', name: "ARG vs COL", f1:"ar", f2:"co", openCost: 2500, odds: 1.80, defaultOutcome: '1' },
                 { id: 3, type: 'chance', deck: 'news', icon: "🖥️" },
-                { id: 4, type: 'corner', name: "VAR REVIEW", icon: "🛑" },
+                { id: 4, type: 'corner', name: t('board_var'), icon: "🛑" },
                 { id: 5, type: 'property', name: "BRA vs URU", f1:"br", f2:"uy", openCost: 2500, odds: 2.10, defaultOutcome: 'X' },
                 { id: 6, type: 'tax', cost: 1000, icon: "💸" },
                 { id: 7, type: 'property', name: "ENG vs SEN", f1:"gb-eng", f2:"sn", openCost: 3000, odds: 1.50, defaultOutcome: '1' },
@@ -819,11 +831,11 @@
                 { id: 9, type: 'property', name: "GER vs JPN", f1:"de", f2:"jp", openCost: 3500, odds: 3.20, defaultOutcome: '2' },
                 { id: 10, type: 'chance', deck: 'movers', icon: "📈" },
                 { id: 11, type: 'property', name: "FRA vs NED", f1:"fr", f2:"nl", openCost: 3500, odds: 2.40, defaultOutcome: 'X' },
-                { id: 12, type: 'corner', name: "HALF TIME", icon: "⏱️" },
+                { id: 12, type: 'corner', name: t('board_halftime'), icon: "⏱️" },
                 { id: 13, type: 'property', name: "POR vs CAN", f1:"pt", f2:"ca", openCost: 4000, odds: 1.40, defaultOutcome: '1' },
                 { id: 14, type: 'property', name: "CRO vs USA", f1:"hr", f2:"us", openCost: 4000, odds: 2.80, defaultOutcome: '2' },
                 { id: 15, type: 'tax', cost: 1500, icon: "📊" },
-                { id: 16, type: 'corner', name: "VAR REVIEW", icon: "🛑" },
+                { id: 16, type: 'corner', name: t('board_var'), icon: "🛑" },
                 { id: 17, type: 'property', name: "BEL vs KOR", f1:"be", f2:"kr", openCost: 4500, odds: 1.65, defaultOutcome: '1' },
                 { id: 18, type: 'chance', deck: 'news', icon: "🖥️" },
                 { id: 19, type: 'property', name: "ARG vs BRA", f1:"ar", f2:"br", openCost: 4500, odds: 2.50, defaultOutcome: 'X' },
@@ -865,16 +877,16 @@
                                 <span class="outcome-badge">${data.defaultOutcome}</span>
                              </div>
                              <div class="property-name flex-col gap-0.5">
-                                <span class="flex items-center justify-center gap-1.5 w-full"><img src="https://flagcdn.com/w20/${data.f1}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-[0_1px_2px_rgba(0,0,0,0.8)] object-cover"> ${teams[0]}</span>
-                                <span class="text-[0.6em] text-slate-400 leading-none">vs</span>
-                                <span class="flex items-center justify-center gap-1.5 w-full"><img src="https://flagcdn.com/w20/${data.f2}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-[0_1px_2px_rgba(0,0,0,0.8)] object-cover"> ${teams[1]}</span>
+                                <span class="flex items-center justify-center gap-1.5 w-full"><img src="https://flagcdn.com/w20/${data.f1}.png" style="width: 1.5em; height: 1.1em;" class="inline-block rounded-[2px] shadow-[0_1px_2px_rgba(0,0,0,0.8)] object-cover" onerror="this.style.display='none';"> ${teams[0]}</span>
+                                <span class="text-[0.6em] text-slate-400 leading-none">${t('market_vs')}</span>
+                                <span class="flex items-center justify-center gap-1.5 w-full"><img src="https://flagcdn.com/w20/${data.f2}.png" style="width: 1.5em; height: 1.1em;" class="inline-block rounded-[2px] shadow-[0_1px_2px_rgba(0,0,0,0.8)] object-cover" onerror="this.style.display='none';"> ${teams[1]}</span>
                              </div>
                              <div class="property-price">${data.odds.toFixed(2)}</div>`;
                 } else if (data.type === 'tax') {
                     html += `<div class="property-name" style="padding-top:10%;">${t('tax_title')}</div><div style="font-size: clamp(14px, 4cqi, 34px); margin:auto;">${data.icon}</div>`;
                     if(data.cost) html += `<div class="property-price" style="color:#fecaca; background:rgba(225, 26, 40, 0.2); border-color:rgba(225,26,40,0.3);">- € ${data.cost}</div>`;
                 } else if (data.type === 'chance') {
-                     html += `<div class="property-name" style="padding-top:10%; color:${data.deck==='news'?'#38bdf8':'#fb7185'};">${t(data.deck==='news'?'news_live':'market_mover')}</div><div style="font-size: clamp(14px, 4cqi, 34px); margin:auto;">${data.icon}</div>`;
+                     html += `<div class="property-name" style="padding-top:10%; color:${data.deck==='news'?'#38bdf8':'#fb7185'};">${t(data.deck==='news'?'news_live':'market_mover').replace('<br>',' ')}</div><div style="font-size: clamp(14px, 4cqi, 34px); margin:auto;">${data.icon}</div>`;
                 } else {
                     html += `<div class="property-name" style="padding-top:5%; height:30%; font-size:clamp(8px, 12cqmin, 16px); color:#fff;">${data.id===4?t('kyc_title'):data.id===16?t('kyc_title'):data.name}</div>
                              <div style="font-size: clamp(18px, 15cqmin, 44px); margin:auto;">${data.icon}</div>`;
@@ -911,11 +923,13 @@
             if(setupPlayerCount >= 4) return;
             setupPlayerCount++; 
             const defaultToken = tokensLib[(setupPlayerCount - 1) % tokensLib.length].id;
+            const defName = isBot ? t('player_bot') : t('player_n', setupPlayerCount);
+            
             const div = document.createElement('div'); 
             div.className = "flex gap-2 items-center justify-between p-2 border border-slate-200 w-full bg-white rounded shadow-sm";
             div.innerHTML = `
                 <div class="flex flex-col flex-1 min-w-[80px]">
-                    <input type="text" id="pname-${setupPlayerCount}" value="${nameOverride || 'Player ' + setupPlayerCount}" ${isBot ? 'readonly' : ''} class="border border-slate-300 p-1.5 rounded font-bold text-xs outline-none focus:border-blue-500 focus:ring-1 transition-shadow ${isBot ? 'bg-slate-100 text-slate-500' : 'bg-white'}">
+                    <input type="text" id="pname-${setupPlayerCount}" value="${nameOverride || defName}" ${isBot ? 'readonly' : ''} class="border border-slate-300 p-1.5 rounded font-bold text-xs outline-none focus:border-blue-500 focus:ring-1 transition-shadow ${isBot ? 'bg-slate-100 text-slate-500' : 'bg-white'}">
                 </div>
                 <div class="flex items-center gap-2 bg-slate-50 p-1 rounded border border-slate-200">
                     <div id="preview-${setupPlayerCount}" class="w-6 h-6 drop-shadow-md">${tokenSVGs[defaultToken]}</div>
@@ -933,12 +947,12 @@
             gameState.isBotMode = (mode === 'bot');
 
             if (gameState.isBotMode) {
-                addSetupPlayer(false, "Human");
-                addSetupPlayer(true, "PC Bot");
+                addSetupPlayer(false, t('player_human'));
+                addSetupPlayer(true, t('player_bot'));
                 document.getElementById('btn-add-p').style.display = 'none';
             } else {
-                addSetupPlayer(false, "Player 1");
-                addSetupPlayer(false, "Player 2");
+                addSetupPlayer(false);
+                addSetupPlayer(false);
                 document.getElementById('btn-add-p').style.display = 'inline-flex';
             }
         }
@@ -948,7 +962,7 @@
             for(let i=1; i<=setupPlayerCount; i++) {
                 const isBot = gameState.isBotMode && i === 2;
                 gameState.players.push({ 
-                    id: i, name: document.getElementById(`pname-${i}`).value || `Player ${i}`, 
+                    id: i, name: document.getElementById(`pname-${i}`).value || t('player_n', i), 
                     emoji: document.getElementById(`ptoken-${i}`).value, 
                     balance: 20000, pos: 0, inJail: false, isBot: isBot
                 });
@@ -1059,16 +1073,16 @@
         }
 
         function generateSimpleCardHTML(cell, isOwner = false) {
-            const f1Html = cell.f1 ? `<img src="https://flagcdn.com/w20/${cell.f1}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-sm align-baseline">` : '';
-            const f2Html = cell.f2 ? `<img src="https://flagcdn.com/w20/${cell.f2}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-sm align-baseline">` : '';
+            const f1Html = cell.f1 ? `<img src="https://flagcdn.com/w20/${cell.f1}.png" class="inline-block w-[1.5em] h-[1.1em] rounded-[2px] shadow-sm align-baseline" onerror="this.style.display='none';">` : '';
+            const f2Html = cell.f2 ? `<img src="https://flagcdn.com/w20/${cell.f2}.png" class="inline-block w-[1.5em] h-[1.1em] rounded-[2px] shadow-sm align-baseline" onerror="this.style.display='none';">` : '';
             const names = cell.name.split(' vs ');
-            const matchTitle = cell.f1 ? `<div class="flex items-center justify-center gap-1.5">${f1Html} ${names[0]}</div><div class="text-[10px] text-slate-400 my-0.5">vs</div><div class="flex items-center justify-center gap-1.5">${f2Html} ${names[1]}</div>` : cell.name;
+            const matchTitle = cell.f1 ? `<div class="flex items-center justify-center gap-1.5">${f1Html} ${names[0]}</div><div class="text-[10px] text-slate-400 my-0.5">${t('market_vs')}</div><div class="flex items-center justify-center gap-1.5">${f2Html} ${names[1]}</div>` : cell.name;
 
             return `
             <div class="bg-white border border-slate-200 rounded-md p-3 text-center w-full max-w-[240px] shadow-sm">
                 <div class="text-[9px] text-slate-400 font-bold uppercase mb-1">${t('card_market')}</div>
                 <div class="font-heading font-black text-sm text-slate-800 uppercase leading-tight mb-2">${matchTitle}</div>
-                <div class="inline-block border border-slate-300 rounded text-[10px] px-2 py-0.5 font-black bg-slate-50 mb-3 shadow-inner text-slate-700">Outcome: ${cell.defaultOutcome}</div>
+                <div class="inline-block border border-slate-300 rounded text-[10px] px-2 py-0.5 font-black bg-slate-50 mb-3 shadow-inner text-slate-700">${t('card_outcome', cell.defaultOutcome)}</div>
                 <div class="bg-slate-50 rounded p-2 border border-slate-100 flex justify-between items-center mb-2">
                     <span class="text-[10px] text-slate-500 font-bold uppercase">${t('card_odds')}</span>
                     <div class="bf-odds-box scale-[0.8] origin-right !m-0"><div class="bf-odds-value">${cell.odds.toFixed(2)}</div></div>
@@ -1080,7 +1094,7 @@
 
         function handleLanded(player) {
             const bd = getBoardData(); const cell = bd[player.pos]; let html = '';
-            const botLabel = player.isBot ? "🤖 BOT -> " : "";
+            const botLabel = player.isBot ? t('bot_prefix') : "";
             const botHighlight = player.isBot ? "ring-4 ring-offset-2 ring-blue-400" : "";
             
             if (cell.type === 'property') {
@@ -1144,10 +1158,10 @@
             const p = gameState.players[gameState.currentPlayerIdx];
             activeBet = { cellId: cellId, odds: cell.odds, ownerId: owner.id, stake: 0, targetOutcome: cell.defaultOutcome, liability: 0 };
             
-            const f1Html = cell.f1 ? `<img src="https://flagcdn.com/w20/${cell.f1}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-sm">` : '';
-            const f2Html = cell.f2 ? `<img src="https://flagcdn.com/w20/${cell.f2}.png" class="inline-block w-4 h-3 rounded-[2px] shadow-sm">` : '';
+            const f1Html = cell.f1 ? `<img src="https://flagcdn.com/w20/${cell.f1}.png" class="inline-block w-[1.5em] h-[1.1em] rounded-[2px] shadow-sm align-baseline" onerror="this.style.display='none';">` : '';
+            const f2Html = cell.f2 ? `<img src="https://flagcdn.com/w20/${cell.f2}.png" class="inline-block w-[1.5em] h-[1.1em] rounded-[2px] shadow-sm align-baseline" onerror="this.style.display='none';">` : '';
             const names = cell.name.split(' vs ');
-            const matchTitle = cell.f1 ? `<div class="flex items-center justify-center gap-1.5 leading-tight">${f1Html} ${names[0]} <span class="text-[0.7em] text-slate-400 mx-0.5">vs</span> ${f2Html} ${names[1]}</div>` : cell.name;
+            const matchTitle = cell.f1 ? `<div class="flex items-center justify-center gap-1.5 leading-tight">${f1Html} ${names[0]} <span class="text-[0.7em] text-slate-400 mx-0.5">${t('market_vs')}</span> ${f2Html} ${names[1]}</div>` : cell.name;
 
             document.getElementById('bet-match-name').innerHTML = matchTitle;
             document.getElementById('bet-outcome-req').innerText = cell.defaultOutcome;
@@ -1266,7 +1280,7 @@
                 owner.balance += (activeBet.liability + activeBet.stake);
             }
 
-            const botLabel = p.isBot ? "🤖 BOT -> " : "";
+            const botLabel = p.isBot ? t('bot_prefix') : "";
             const botHighlight = p.isBot ? "ring-4 ring-offset-2 ring-blue-300" : "";
 
             let html = `
@@ -1296,11 +1310,11 @@
             const btnBuy = document.getElementById('btn-buy-action');
             const btnPass = document.getElementById('btn-pass-action');
             if(player.balance > cell.openCost + 3000) {
-                btnBuy.innerHTML = "🤖 BOT -> " + t('btn_open_market');
+                btnBuy.innerHTML = t('bot_prefix') + t('btn_open_market');
                 btnBuy.classList.add('ring-4', 'ring-offset-2', 'ring-blue-400');
                 btnPass.style.opacity = '0.3'; btnPass.style.pointerEvents = 'none';
             } else {
-                btnPass.innerHTML = "🤖 BOT -> " + t('btn_pass');
+                btnPass.innerHTML = t('bot_prefix') + t('btn_pass');
                 btnPass.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
                 btnBuy.style.opacity = '0.3'; btnBuy.style.pointerEvents = 'none';
             }
@@ -1320,12 +1334,12 @@
 
             if(chosen > 0) {
                 selectStake(chosen);
-                btnConfirm.innerHTML = "🤖 BOT -> " + t('btn_bet_resolve');
+                btnConfirm.innerHTML = t('bot_prefix') + t('btn_bet_resolve');
                 btnConfirm.classList.add('ring-4', 'ring-offset-2', 'ring-blue-400');
                 btnPass.style.opacity = '0.3'; btnPass.style.pointerEvents = 'none';
             } else {
                 selectStake(0);
-                btnPass.innerHTML = "🤖 BOT -> " + t('btn_pass');
+                btnPass.innerHTML = t('bot_prefix') + t('btn_pass');
                 btnPass.classList.add('ring-4', 'ring-offset-2', 'ring-gray-400');
                 btnConfirm.style.opacity = '0.3'; btnConfirm.style.pointerEvents = 'none';
             }
@@ -1335,7 +1349,7 @@
             const isNews = deckType === 'news'; const deckName = t(isNews ? 'news_live' : 'market_mover').replace('<br>', ' ');
             const icon = isNews ? "🖥️" : "📈"; const headerColor = isNews ? "text-[#0ea5e9]" : "text-[#f43f5e]";
             const ev = { m: "Odds shifted in your favor! Cash out.", v: 1000 }; 
-            const botLabel = player.isBot ? "🤖 BOT -> " : "";
+            const botLabel = player.isBot ? t('bot_prefix') : "";
             const botHighlight = player.isBot ? "ring-4 ring-offset-2 ring-blue-400" : "";
             let html = `
                 <div class="modal-content-scroll flex flex-col items-center text-center py-4">
@@ -1344,7 +1358,7 @@
                     <p class="text-slate-700 font-medium text-[11px] mb-4 bg-slate-50 p-2.5 rounded border border-slate-200 w-full italic">"${ev.m}"</p>
                     <div class="text-xl font-black ${ev.v > 0 ? 'text-[#25a347]' : 'text-[#e11a28]'} mb-1">${ev.v > 0 ? '+' : ''}€ ${ev.v.toLocaleString('it-IT')}</div>
                 </div>
-                <div class="modal-footer-sticky"><button class="btn w-full btn-bf-blue ${botHighlight}" onclick="applyChance(${ev.v})">${botLabel}OK</button></div>`;
+                <div class="modal-footer-sticky"><button class="btn w-full btn-bf-blue ${botHighlight}" onclick="applyChance(${ev.v})">${botLabel}${t('btn_ok')}</button></div>`;
             showActionModal(html);
         }
 
