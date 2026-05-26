@@ -29,12 +29,12 @@
             --bf-grey: #66727d;
             --bf-bg: #f8fafc;
 
-            /* LED Stadium Theme */
+            /* Tema Stadio LED */
             --banner-bg-1: #0f172a;
             --banner-bg-2: #1e293b;
             --banner-border: #334155;
             
-            /* Vertical Football Pitch */
+            /* Colori Campo */
             --pitch-dark: #2d6a32;
             --pitch-light: #36803c;
         }
@@ -87,18 +87,28 @@
         #board-area {
             position: relative; display: flex; align-items: center; justify-content: center;
             height: 100%; width: 100%;
-            max-width: calc( (100dvh - 120px) * (10 / 16) ); 
-            aspect-ratio: 10 / 16;
+            max-height: calc(100dvh - 120px);
+            max-width: 96dvw;
             background: linear-gradient(135deg, var(--banner-bg-1), var(--banner-bg-2));
             border-radius: 8px;
             box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 4px var(--banner-border);
             z-index: 10;
+            transition: aspect-ratio 0.3s ease, max-width 0.3s ease;
+        }
+
+        /* Dimensioni Tabellone Dinamiche */
+        #board-area.portrait {
+            aspect-ratio: 10 / 16;
+            max-width: calc( (100dvh - 120px) * (10 / 16) ); 
+        }
+        
+        #board-area.landscape {
+            aspect-ratio: 16 / 9;
+            max-width: calc( (100dvh - 120px) * (16 / 9) ); 
         }
 
         #board {
             width: 99.5%; height: 99.5%; display: grid;
-            grid-template-columns: 20% repeat(3, 1fr) 20%;
-            grid-template-rows: 12.5% repeat(7, 1fr) 12.5%;
             gap: 2px; background-color: var(--banner-border); 
             border-radius: 6px; overflow: hidden;
         }
@@ -117,16 +127,17 @@
             width: 100%; height: 100%;
         }
 
-        .bottom-row .cell-content { transform: translate(-50%, -50%) rotate(0deg); }
-        .top-row .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
-        .left-col .cell-content { transform: translate(-50%, -50%) rotate(90deg); width: 100cqh; height: 100cqw; }
-        .right-col .cell-content { transform: translate(-50%, -50%) rotate(-90deg); width: 100cqh; height: 100cqw; }
-        .corner .cell-content { justify-content: center; padding: 2%; transform: translate(-50%, -50%) rotate(0deg);}
+        /* Rotazioni Dipendenti dal Layout per mantenere leggibilità esterna */
+        .dir-bottom .cell-content { transform: translate(-50%, -50%) rotate(0deg); }
+        .dir-top .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
+        .dir-left .cell-content { transform: translate(-50%, -50%) rotate(90deg); width: 100cqh; height: 100cqw; }
+        .dir-right .cell-content { transform: translate(-50%, -50%) rotate(-90deg); width: 100cqh; height: 100cqw; }
         
-        #cell-0 .cell-content { transform: translate(-50%, -50%) rotate(0deg); }
-        #cell-4 .cell-content { transform: translate(-50%, -50%) rotate(90deg); }
-        #cell-12 .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
-        #cell-16 .cell-content { transform: translate(-50%, -50%) rotate(-90deg); }
+        .corner .cell-content { justify-content: center; padding: 2%; }
+        .corner-0 .cell-content { transform: translate(-50%, -50%) rotate(0deg); }
+        .corner-90 .cell-content { transform: translate(-50%, -50%) rotate(90deg); }
+        .corner-180 .cell-content { transform: translate(-50%, -50%) rotate(180deg); }
+        .corner-270 .cell-content { transform: translate(-50%, -50%) rotate(-90deg); }
 
         .color-bar { 
             width: 100%; height: 28%; flex-shrink: 0;
@@ -157,19 +168,35 @@
             border: 1px solid rgba(255, 255, 255, 0.2); letter-spacing: 0.5px; line-height: 1.2;
         }
         
+        /* Area Centrale e Campo - Orientamento Adattivo */
         #center-board {
-            grid-column: 2 / span 3; grid-row: 2 / span 7;
-            background: repeating-linear-gradient(0deg, var(--pitch-dark), var(--pitch-dark) 10%, var(--pitch-light) 10%, var(--pitch-light) 20%);
             position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden; outline: 3px solid #fff; outline-offset: -8px; border-radius: 2px;
         }
+        
+        #center-board.pitch-portrait {
+            background: repeating-linear-gradient(0deg, var(--pitch-dark), var(--pitch-dark) 10%, var(--pitch-light) 10%, var(--pitch-light) 20%);
+        }
+        
+        #center-board.pitch-landscape {
+            background: repeating-linear-gradient(90deg, var(--pitch-dark), var(--pitch-dark) 10%, var(--pitch-light) 10%, var(--pitch-light) 20%);
+        }
 
-        .pitch-line-center { position: absolute; height: 3px; width: calc(100% - 20px); background: rgba(255,255,255,0.7); top: 50%; left: 10px; transform: translateY(-50%); }
-        .pitch-circle { position: absolute; width: 40cqw; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.7); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
+        .pitch-line-center { position: absolute; background: rgba(255,255,255,0.7); }
+        .pitch-box-1, .pitch-box-2 { position: absolute; border: 3px solid rgba(255,255,255,0.7); }
+        
+        /* Layout Campo Verticale */
+        .pitch-portrait .pitch-line-center { height: 3px; width: calc(100% - 20px); top: 50%; left: 10px; transform: translateY(-50%); }
+        .pitch-portrait .pitch-box-1 { width: 50%; height: 12%; top: 10px; left: 50%; transform: translateX(-50%); border-top: none; }
+        .pitch-portrait .pitch-box-2 { width: 50%; height: 12%; bottom: 10px; left: 50%; transform: translateX(-50%); border-bottom: none; }
+        
+        /* Layout Campo Orizzontale */
+        .pitch-landscape .pitch-line-center { width: 3px; height: calc(100% - 20px); left: 50%; top: 10px; transform: translateX(-50%); }
+        .pitch-landscape .pitch-box-1 { height: 50%; width: 10%; left: 10px; top: 50%; transform: translateY(-50%); border-left: none; }
+        .pitch-landscape .pitch-box-2 { height: 50%; width: 10%; right: 10px; top: 50%; transform: translateY(-50%); border-right: none; }
+
+        .pitch-circle { position: absolute; width: 40cqmin; aspect-ratio: 1; border: 3px solid rgba(255,255,255,0.7); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
         .pitch-center-dot { position: absolute; width: 6px; height: 6px; background: rgba(255,255,255,0.9); border-radius: 50%; left: 50%; top: 50%; transform: translate(-50%, -50%); }
-        .pitch-box-top, .pitch-box-bottom { position: absolute; width: 50%; height: 12%; border: 3px solid rgba(255,255,255,0.7); left: 50%; transform: translateX(-50%); }
-        .pitch-box-top { top: 10px; border-top: none; }
-        .pitch-box-bottom { bottom: 10px; border-bottom: none; }
 
         .center-logo {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -181,8 +208,12 @@
             border: 2px dashed rgba(255,255,255,0.4); border-radius: 6px;
             display: flex; justify-content: center; align-items: center; 
         }
-        .deck-slot.news { top: 18%; left: 10%; transform: rotate(15deg); }
-        .deck-slot.movers { bottom: 18%; right: 10%; transform: rotate(15deg); }
+        
+        .pitch-portrait .deck-slot.news { top: 18%; left: 10%; transform: rotate(15deg); }
+        .pitch-portrait .deck-slot.movers { bottom: 18%; right: 10%; transform: rotate(15deg); }
+        
+        .pitch-landscape .deck-slot.news { top: 15%; left: 15%; transform: rotate(15deg); }
+        .pitch-landscape .deck-slot.movers { bottom: 15%; right: 15%; transform: rotate(15deg); }
         
         .deck-stack { 
             width: 90%; height: 85%; border-radius: 4px; 
@@ -324,14 +355,15 @@
         <div id="toast-container"></div>
 
         <div id="board-container">
-            <div id="board-area">
+            <div id="board-area" class="portrait">
                 <div id="board">
-                    <div id="center-board">
+                    <!-- Tabellone renderizzato via JavaScript -->
+                    <div id="center-board" class="pitch-portrait">
                         <div class="pitch-line-center"></div>
                         <div class="pitch-circle"></div>
                         <div class="pitch-center-dot"></div>
-                        <div class="pitch-box-top"></div>
-                        <div class="pitch-box-bottom"></div>
+                        <div class="pitch-box-1"></div>
+                        <div class="pitch-box-2"></div>
                         
                         <img src="logo-tondo.jpeg" alt="Logo" class="center-logo" onerror="this.outerHTML='<span style=\'font-size: clamp(3rem, 10vmin, 6rem); position: absolute; opacity: 0.2; top: 50%; left: 50%; transform: translate(-50%, -50%);\'>⚽</span>'">
                         
@@ -804,9 +836,11 @@
             });
             document.getElementById('board-news-text').innerHTML = t('news_live');
             document.getElementById('board-movers-text').innerHTML = t('market_mover');
+            
+            // Re-renderizza il tabellone se i contenuti (nomi) sono stati tradotti
             initBoard();
             if (document.getElementById('modal-setup').classList.contains('show')) {
-                updateSetupMode(); // refresh setup inputs
+                updateSetupMode(); // Aggiorna i nomi fittizi se il modal è aperto
             }
         }
 
@@ -816,7 +850,7 @@
             return str;
         }
 
-        // 24 Cells mapped to a 5x9 Grid (Portrait Optimized)
+        // Dati grezzi - 24 Caselle (L'ordinamento effettivo viene gestito dalla Layout Config)
         function getBoardData() {
             return [
                 { id: 0, type: 'corner', name: t('board_kickoff'), icon: "⚽" },
@@ -846,29 +880,95 @@
             ];
         }
 
-        const cellPos = {
-            0: {c:5, r:9}, 1: {c:4, r:9}, 2: {c:3, r:9}, 3: {c:2, r:9},
-            4: {c:1, r:9}, 5: {c:1, r:8}, 6: {c:1, r:7}, 7: {c:1, r:6}, 8: {c:1, r:5}, 9: {c:1, r:4}, 10: {c:1, r:3}, 11: {c:1, r:2},
-            12: {c:1, r:1}, 13: {c:2, r:1}, 14: {c:3, r:1}, 15: {c:4, r:1},
-            16: {c:5, r:1}, 17: {c:5, r:2}, 18: {c:5, r:3}, 19: {c:5, r:4}, 20: {c:5, r:5}, 21: {c:5, r:6}, 22: {c:5, r:7}, 23: {c:5, r:8}
-        };
+        /* Motore di Rilevamento Orientamento & Mappatura Griglia (Responsive) */
+        function getLayoutConfig() {
+            // Controlla se siamo su uno schermo Desktop e Orizzontale
+            const isLandscape = window.innerWidth >= 768 && window.innerWidth > window.innerHeight;
+            
+            let cfg = { isLandscape: isLandscape, positions: {} };
+            
+            if (isLandscape) {
+                // Layout Desktop Orizzontale (9 colonne x 5 righe) -> Perimetro 24 caselle
+                cfg.gridCols = `11.25% repeat(7, 1fr) 11.25%`;
+                cfg.gridRows = `20% repeat(3, 1fr) 20%`;
+                
+                // Mappatura Angoli
+                cfg.positions[0]  = { c: 9, r: 5, dir: 'corner-0' };
+                cfg.positions[4]  = { c: 9, r: 1, dir: 'corner-270' };
+                cfg.positions[12] = { c: 1, r: 1, dir: 'corner-180' };
+                cfg.positions[16] = { c: 1, r: 5, dir: 'corner-90' };
+                
+                // Lato Destro (sale)
+                for(let i=1; i<=3; i++) cfg.positions[i] = { c: 9, r: 5-i, dir: 'dir-right' };
+                // Lato Superiore (va a sinistra)
+                for(let i=5; i<=11; i++) cfg.positions[i] = { c: 9-(i-4), r: 1, dir: 'dir-top' };
+                // Lato Sinistro (scende)
+                for(let i=13; i<=15; i++) cfg.positions[i] = { c: 1, r: 1+(i-12), dir: 'dir-left' };
+                // Lato Inferiore (va a destra)
+                for(let i=17; i<=23; i++) cfg.positions[i] = { c: 1+(i-16), r: 5, dir: 'dir-bottom' };
+                
+                // Zona centrale per il campo da gioco
+                cfg.center = { cStart: 2, cEnd: 8, rStart: 2, rEnd: 4 };
+            } else {
+                // Layout Mobile Verticale (5 colonne x 9 righe) -> Perimetro 24 caselle
+                cfg.gridCols = `20% repeat(3, 1fr) 20%`;
+                cfg.gridRows = `12.5% repeat(7, 1fr) 12.5%`;
+                
+                // Mappatura Angoli
+                cfg.positions[0]  = { c: 5, r: 9, dir: 'corner-0' };
+                cfg.positions[4]  = { c: 1, r: 9, dir: 'corner-90' };
+                cfg.positions[12] = { c: 1, r: 1, dir: 'corner-180' };
+                cfg.positions[16] = { c: 5, r: 1, dir: 'corner-270' };
+                
+                // Lato Inferiore (va a sinistra)
+                for(let i=1; i<=3; i++) cfg.positions[i] = { c: 5-i, r: 9, dir: 'dir-bottom' };
+                // Lato Sinistro (sale)
+                for(let i=5; i<=11; i++) cfg.positions[i] = { c: 1, r: 9-(i-4), dir: 'dir-left' };
+                // Lato Superiore (va a destra)
+                for(let i=13; i<=15; i++) cfg.positions[i] = { c: 1+(i-12), r: 1, dir: 'dir-top' };
+                // Lato Destro (scende)
+                for(let i=17; i<=23; i++) cfg.positions[i] = { c: 5, r: 1+(i-16), dir: 'dir-right' };
+                
+                // Zona centrale per il campo da gioco
+                cfg.center = { cStart: 2, cEnd: 4, rStart: 2, rEnd: 8 };
+            }
+            return cfg;
+        }
 
         let gameState = { players: [], currentPlayerIdx: 0, properties: {}, isMoving: false, lastResult: null, isBotMode: false };
+        let currentLayoutIsLandscape = null;
 
         function initBoard() {
+            const boardArea = document.getElementById('board-area');
             const board = document.getElementById('board'); 
+            
+            const cfg = getLayoutConfig();
+            currentLayoutIsLandscape = cfg.isLandscape;
+            
+            // Imposta Classi Contenitore (Proporzioni)
+            if (cfg.isLandscape) {
+                boardArea.classList.remove('portrait');
+                boardArea.classList.add('landscape');
+            } else {
+                boardArea.classList.remove('landscape');
+                boardArea.classList.add('portrait');
+            }
+            
+            board.style.gridTemplateColumns = cfg.gridCols;
+            board.style.gridTemplateRows = cfg.gridRows;
+
+            // Pulisci solo le caselle (mantiene i token e il center-board nel DOM)
             document.querySelectorAll('.cell').forEach(c => c.remove());
             const fragment = document.createDocumentFragment(); 
             
             getBoardData().forEach(data => {
                 const cell = document.createElement('div'); 
-                cell.className = `cell ${data.type === 'corner' ? 'corner' : ''}`; cell.id = `cell-${data.id}`;
-                const pos = cellPos[data.id]; cell.style.gridColumn = pos.c; cell.style.gridRow = pos.r;
+                const pos = cfg.positions[data.id];
                 
-                if(data.id > 0 && data.id < 4) cell.classList.add("bottom-row");
-                else if(data.id > 4 && data.id < 12) cell.classList.add("left-col");
-                else if(data.id > 12 && data.id < 16) cell.classList.add("top-row");
-                else if(data.id > 16 && data.id < 24) cell.classList.add("right-col");
+                cell.className = `cell ${data.type === 'corner' ? 'corner' : ''} ${pos.dir}`; 
+                cell.id = `cell-${data.id}`;
+                cell.style.gridColumn = pos.c; 
+                cell.style.gridRow = pos.r;
 
                 let html = `<div class="cell-content">`;
                 if (data.type === 'property') {
@@ -898,8 +998,31 @@
                 }
             });
             board.appendChild(fragment);
+            
+            // Riposiziona il campo centrale sopra la griglia
+            const centerBoard = document.getElementById('center-board');
+            centerBoard.className = cfg.isLandscape ? 'pitch-landscape' : 'pitch-portrait';
+            centerBoard.style.gridColumn = `${cfg.center.cStart} / span ${cfg.center.cEnd - cfg.center.cStart + 1}`;
+            centerBoard.style.gridRow = `${cfg.center.rStart} / span ${cfg.center.rEnd - cfg.center.rStart + 1}`;
+            board.appendChild(centerBoard);
+            
             refreshBoardVisuals();
+            
+            // Aggiorna posizioni token asincronamente per permettere al DOM di ri-calcolare dimensioni
+            setTimeout(updateTokens, 50);
         }
+
+        // Ascoltatore Resize per gestire il transito Mobile <-> Desktop Dinamicamente
+        window.addEventListener('resize', () => {
+            const cfg = getLayoutConfig();
+            if (cfg.isLandscape !== currentLayoutIsLandscape) {
+                // Layout cambiato, ricrea tutta la griglia
+                initBoard(); 
+            } else {
+                // Semplice resize, ricalcola solo le coordinate dei Token
+                setTimeout(updateTokens, 100);
+            }
+        });
 
         function refreshBoardVisuals() {
             const colors = ['#25a347', '#e11a28', '#2b8aed', '#eab308'];
@@ -1027,7 +1150,6 @@
                 if (tEl) { tEl.style.left = `${centerX + offsetX}px`; tEl.style.top = `${centerY + offsetY}px`; }
             });
         }
-        window.addEventListener('resize', () => setTimeout(updateTokens, 100));
 
         function handleDiceClick() {
             const p = gameState.players[gameState.currentPlayerIdx];
